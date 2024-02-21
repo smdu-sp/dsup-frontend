@@ -1,21 +1,57 @@
 import { useContext } from 'react';
-import { Link, ListItemButton, ListItemDecorator, ListItemContent, ListItem, List, Sheet, Box, SvgIcon } from '@mui/joy';
-import { menu } from '../app/menu';
+import { Link, ListItemButton, ListItemDecorator, ListItemContent, ListItem, List, Sheet, Box, SvgIcon, Divider, ListDivider, Typography } from '@mui/joy';
+import { IMenu, menu } from '../app/menu';
 import { MenuContext } from '@/shared/contexts/MenuContext';
 import { useRouter } from 'next/navigation';
 import Usuario from './Usuario';
+import { ListSubheader } from '@mui/material';
+
+const renderMenu = (menu: IMenu, pagina?: string) => {
+  return (
+      <List
+        size="sm"
+        variant="outlined"
+        sx={{
+          '--ListItem-radius': '6px',
+          gap: 0.5,
+          padding: 1,
+          borderRadius: 'sm',
+        }}
+      >        
+        <ListSubheader sx={{ lineHeight: 2 }}>Menu</ListSubheader>
+        {menu.userOptions.map((page) => (
+          <ListItem sx={{width: '100%'}} key={page.name}>
+            <ListItemButton component={Link} underline="none" selected={pagina===page.name} href={page.href}>
+              <ListItemDecorator>
+                <SvgIcon component={page.icon} />
+              </ListItemDecorator>
+              <ListItemContent>{page.title}</ListItemContent>
+            </ListItemButton>
+          </ListItem>
+        ))}
+        <ListDivider inset={'gutter'} />
+        <ListSubheader sx={{ lineHeight: 2 }}>Administração</ListSubheader>
+        {menu.adminOptions.map((page) => (
+          <ListItem sx={{width: '100%'}} key={page.name}>
+            <ListItemButton component={Link} underline="none" selected={pagina===page.name} href={page.href}>
+              <ListItemDecorator>
+                <SvgIcon component={page.icon} />
+              </ListItemDecorator>
+              <ListItemContent>{page.title}</ListItemContent>
+            </ListItemButton>
+          </ListItem>
+          
+        ))}
+      </List>
+  );
+}
 
 export default function SecondSidebar({
   pagina,
   menuOverride,
 } : {
   pagina?: string;
-  menuOverride?: {
-    title: string;
-    href: string;
-    name: string;
-    icon: any;
-  }[];
+  menuOverride?: IMenu;
 }) {
   const { closeSidebar } = useContext(MenuContext);
   return (
@@ -64,48 +100,14 @@ export default function SecondSidebar({
           borderColor: 'divider',
           maxWidth: 250,
         }}
-      >
-        <List
-          size="sm"
+      > 
+        <Box
           sx={{
-            '--ListItem-radius': '6px',
-            '--List-gap': '6px',
+            flex: 1,
           }}
         >
-          {menuOverride ?
-            menuOverride.map((page) => (
-              <Link 
-                href={page.href}
-                underline='none'
-                key={page.name}
-              >
-                <ListItem sx={{width: '100%'}}>
-                    <ListItemButton selected={pagina===page.name}>
-                      <ListItemDecorator>
-                        <SvgIcon component={page.icon} />
-                      </ListItemDecorator>
-                      <ListItemContent>{page.title}</ListItemContent>
-                    </ListItemButton>
-                </ListItem>
-              </Link>
-            ))
-          : menu.map((page) => (
-            <Link 
-              href={page.href}
-              underline='none'
-              key={page.name}
-            >
-              <ListItem sx={{width: '100%'}}>
-                  <ListItemButton selected={page.name === pagina}>
-                    <ListItemDecorator >
-                      <SvgIcon component={page.icon} />
-                    </ListItemDecorator>
-                    <ListItemContent>{page.title}</ListItemContent>
-                  </ListItemButton>
-              </ListItem>
-            </Link>
-          ))}
-        </List>
+          {menuOverride ? renderMenu(menuOverride, pagina) : renderMenu(menu, pagina)}
+        </Box>
         <Usuario />
       </Sheet>
     </>

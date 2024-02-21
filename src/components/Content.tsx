@@ -5,6 +5,7 @@ import FirstSidebar from '@/components/FirstSidebar';
 import SecondSidebar from '@/components/SecondSidebar';
 import SecondHeader from '@/components/SecondHeader';
 import React, { useEffect } from 'react';
+import { IMenu } from '@/app/menu';
 
 export default function Content({
     children,
@@ -22,12 +23,7 @@ export default function Content({
       label: string;
       href: string;
     }[];
-    menuOverride?: {
-      title: string;
-      href: string;
-      name: string;
-      icon: any;
-    }[];
+    menuOverride?: IMenu;
 }) {
   useEffect(() => {
     document.title = titulo + ' | ' + (process.env.NEXT_PUBLIC_PROJECT_NAME || 'SISAR');

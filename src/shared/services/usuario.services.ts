@@ -28,7 +28,7 @@ const baseURL = process.env.API_URL || 'http://localhost:3000/';
 
 async function buscarTudo(status: number = 1, pagina: number = 1, limite: number = 10, busca: string = ''): Promise<IPaginadoUsuario> {
     const session = await getServerSession(authOptions);
-    const usuarios = await fetch(`${baseURL}usuario/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&busca=${busca}`, {
+    const usuarios = await fetch(`${baseURL}usuarios/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&busca=${busca}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -43,7 +43,7 @@ async function buscarTudo(status: number = 1, pagina: number = 1, limite: number
 
 async function buscarPorId(id: string): Promise<IUsuario> {
     const session = await getServerSession(authOptions);
-    const usuario = await fetch(`${baseURL}usuario/buscar-por-id/${id}`, {
+    const usuario = await fetch(`${baseURL}usuarios/buscar-por-id/${id}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -58,7 +58,7 @@ async function buscarPorId(id: string): Promise<IUsuario> {
 
 async function autorizar(id: string): Promise<{ autorizado: boolean }> {
     const session = await getServerSession(authOptions);
-    const autorizado = await fetch(`${baseURL}usuario/autorizar/${id}`, {
+    const autorizado = await fetch(`${baseURL}usuarios/autorizar/${id}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -74,7 +74,7 @@ async function autorizar(id: string): Promise<{ autorizado: boolean }> {
 
 async function desativar(id: string): Promise<{ autorizado: boolean }> {
     const session = await getServerSession(authOptions);
-    const desativado = await fetch(`${baseURL}usuario/desativar/${id}`, {
+    const desativado = await fetch(`${baseURL}usuarios/desativar/${id}`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
@@ -90,7 +90,7 @@ async function desativar(id: string): Promise<{ autorizado: boolean }> {
 
 async function validaUsuario(): Promise<IUsuario> {
     const session = await getServerSession(authOptions);
-    const usuario = await fetch(`${baseURL}usuario/valida-usuario`, {
+    const usuario = await fetch(`${baseURL}usuarios/valida-usuario`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
