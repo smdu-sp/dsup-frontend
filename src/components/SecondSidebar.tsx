@@ -1,10 +1,11 @@
-import { useContext } from 'react';
-import { Link, ListItemButton, ListItemDecorator, ListItemContent, ListItem, List, Sheet, Box, SvgIcon, Divider, ListDivider, Typography } from '@mui/joy';
+import { useContext, useEffect, useState } from 'react';
+import { Link, ListItemButton, ListItemDecorator, ListItemContent, ListItem, List, Sheet, Box, SvgIcon, ListDivider } from '@mui/joy';
 import { IMenu, menu } from '../app/menu';
 import { MenuContext } from '@/shared/contexts/MenuContext';
-import { useRouter } from 'next/navigation';
 import Usuario from './Usuario';
 import { ListSubheader } from '@mui/material';
+import { getSession } from 'next-auth/react';
+import { UsuarioToken } from '@/shared/interfaces/usuario-token';
 
 const renderMenu = (menu: IMenu, pagina?: string) => {
   return (
@@ -18,7 +19,7 @@ const renderMenu = (menu: IMenu, pagina?: string) => {
           borderRadius: 'sm',
         }}
       >        
-        <ListSubheader sx={{ lineHeight: 2 }}>Menu</ListSubheader>
+        <ListSubheader sx={{ lineHeight: 2, borderRadius: 2 }}>Menu</ListSubheader>
         {menu.userOptions.map((page) => (
           <ListItem sx={{width: '100%'}} key={page.name}>
             <ListItemButton component={Link} underline="none" selected={pagina===page.name} href={page.href}>
@@ -30,7 +31,7 @@ const renderMenu = (menu: IMenu, pagina?: string) => {
           </ListItem>
         ))}
         <ListDivider inset={'gutter'} />
-        <ListSubheader sx={{ lineHeight: 2 }}>Administração</ListSubheader>
+        <ListSubheader sx={{ lineHeight: 2, borderRadius: 2 }}>Administração</ListSubheader>
         {menu.adminOptions.map((page) => (
           <ListItem sx={{width: '100%'}} key={page.name}>
             <ListItemButton component={Link} underline="none" selected={pagina===page.name} href={page.href}>
@@ -54,6 +55,14 @@ export default function SecondSidebar({
   menuOverride?: IMenu;
 }) {
   const { closeSidebar } = useContext(MenuContext);
+  useEffect(() => {
+    getSession().catch((error) => console.log(error)).then((session) => {
+      if (session) setUsuario(session.usuario);
+    });    
+  }, []);
+  const [usuario, setUsuario] = useState<UsuarioToken>();
+  // const [menuRender, setMenuRender]
+
   return (
     <>
       <Box

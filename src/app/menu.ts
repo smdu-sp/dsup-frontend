@@ -1,5 +1,5 @@
 import { authOptions } from './api/auth/[...nextauth]/route';
-import { Home, Person } from '@mui/icons-material';
+import { Business, Home, Person } from '@mui/icons-material';
 
 export interface IMenuOption {
     title:  string;
@@ -29,6 +29,12 @@ export const menu: IMenu = {
             href: '/usuarios',
             name: '/usuarios',
             icon: Person,
-        }        
+        },
+        {
+            title: 'Unidades',
+            href: '/unidades',
+            name: '/unidades',
+            icon: Business,
+        }           
     ]
 }
