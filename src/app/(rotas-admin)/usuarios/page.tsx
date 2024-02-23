@@ -123,7 +123,7 @@ export default function Usuarios() {
 
   const permissoes: Record<string, { label: string, value: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }> = {
     'DEV': { label: 'Desenvolvedor', value: 'DEV', color: 'primary' },
-    'SUP': { label: 'Superusuario', value: 'SUP', color: 'neutral' },
+    'TEC': { label: 'Técnico', value: 'TEC', color: 'neutral' },
     'ADM': { label: 'Administrador', value: 'ADM', color: 'success' },
     'USR': { label: 'Usuário', value: 'USR', color: 'warning' },
   }
@@ -134,7 +134,7 @@ export default function Usuarios() {
         { label: 'Usuários', href: '/usuarios' }
       ]}
       titulo='Usuários'
-      pagina='/usuarios'
+      pagina='usuarios'
     >
       <Snackbar
         variant="solid"

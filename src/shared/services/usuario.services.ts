@@ -12,6 +12,7 @@ export interface IUsuario {
     login: string;
     permissao: string;
     status: number;
+    unidade_id: string;
     ultimoLogin: Date;
     criadoEm: Date;
     atualizadoEm: Date;

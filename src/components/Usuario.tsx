@@ -3,16 +3,20 @@ import { Box, Card, CardContent, Chip, ChipPropsColorOverrides, ColorPaletteProp
 import { getSession } from "next-auth/react";
 import { OverridableStringUnion } from '@mui/types';
 import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Usuario() {
+    const router = useRouter();
+    const pathname = usePathname();
     const permissoes: Record<string, { label: string, value: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }> = {
       'DEV': { label: 'Desenvolvedor', value: 'DEV', color: 'primary' },
-      'SUP': { label: 'Superusuario', value: 'SUP', color: 'neutral' },
+      'TEC': { label: 'Técnico', value: 'TEC', color: 'neutral' },
       'ADM': { label: 'Administrador', value: 'ADM', color: 'success' },
       'USR': { label: 'Usuário', value: 'USR', color: 'warning' },
     }
 
     useEffect(() => {
+      console.log(pathname);
       getSession().catch((error) => console.log(error)).then((session) => {
         if (session) setUsuario(session.usuario);
       });    
@@ -27,7 +31,7 @@ export default function Usuario() {
         return nome;
     }
     return (usuario ?
-    <Card sx={{ maxWidth: 250 }}>
+    <Card sx={{ maxWidth: 250, ":hover": { opacity: '60%' }, cursor: 'pointer' }} variant={pathname === '/eu' ? 'soft' : undefined} onClick={() => {router.push('/eu')}}>
         <CardContent sx={{ alignItems: 'center', textAlign: 'center' }}>
             <Typography
                 level="title-lg"

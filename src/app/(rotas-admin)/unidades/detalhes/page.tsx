@@ -4,6 +4,6 @@ import UnidadeDetalhes from './[id]/page';
 
 export const dynamicParams = true
 
-export default function UsuarioNovo(props: any) {
+export default function UnidadeNova(props: any) {
     return UnidadeDetalhes(props);
 }

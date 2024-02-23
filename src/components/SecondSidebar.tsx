@@ -8,10 +8,14 @@ import { getSession } from 'next-auth/react';
 import { UsuarioToken } from '@/shared/interfaces/usuario-token';
 
 const renderMenu = (menu: IMenu, pagina?: string) => {
+  const [admin, setAdmin] = useState(false);
+  getSession().catch((error) => console.log(error)).then((session) => {
+    if (session) setAdmin(['ADM', 'DEV'].includes(session.usuario.permissao));
+  });  
   return (
       <List
         size="sm"
-        variant="outlined"
+        variant={admin ? "outlined" : undefined}
         sx={{
           '--ListItem-radius': '6px',
           gap: 0.5,
@@ -19,7 +23,7 @@ const renderMenu = (menu: IMenu, pagina?: string) => {
           borderRadius: 'sm',
         }}
       >        
-        <ListSubheader sx={{ lineHeight: 2, borderRadius: 2 }}>Menu</ListSubheader>
+        <ListSubheader sx={{ lineHeight: 2, borderRadius: 2, backgroundColor: 'transparent' }}>Menu</ListSubheader>
         {menu.userOptions.map((page) => (
           <ListItem sx={{width: '100%'}} key={page.name}>
             <ListItemButton component={Link} underline="none" selected={pagina===page.name} href={page.href}>
@@ -30,9 +34,9 @@ const renderMenu = (menu: IMenu, pagina?: string) => {
             </ListItemButton>
           </ListItem>
         ))}
-        <ListDivider inset={'gutter'} />
-        <ListSubheader sx={{ lineHeight: 2, borderRadius: 2 }}>Administração</ListSubheader>
-        {menu.adminOptions.map((page) => (
+        {admin ? <ListDivider inset={'gutter'} /> : null}
+        {admin ? <ListSubheader sx={{ lineHeight: 2, borderRadius: 2, backgroundColor: 'transparent' }}>Administração</ListSubheader> : null}
+        {admin ? menu.adminOptions.map((page) => (
           <ListItem sx={{width: '100%'}} key={page.name}>
             <ListItemButton component={Link} underline="none" selected={pagina===page.name} href={page.href}>
               <ListItemDecorator>
@@ -42,7 +46,7 @@ const renderMenu = (menu: IMenu, pagina?: string) => {
             </ListItemButton>
           </ListItem>
           
-        ))}
+        )) : null}
       </List>
   );
 }

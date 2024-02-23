@@ -12,12 +12,11 @@ import { IUsuario } from "@/shared/services/usuario.services";
 import * as usuarioServices from "@/shared/services/usuario.services";
 import * as unidadeServices from "@/shared/services/unidade.services";
 
-export default function UsuarioDetalhes(props: any) {
+export default function UsuarioDetalhes() {
     const [usuario, setUsuario] = useState<IUsuario>();
     const [permissao, setPermissao] = useState('');
     const [unidades, setUnidades] = useState<IUnidade[]>([]);
     const [unidade, setUnidade] = useState('');
-    const { id } = props.params;
     const router = useRouter();
 
     const permissoes: Record<string, { label: string, value: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }> = {
@@ -27,36 +26,37 @@ export default function UsuarioDetalhes(props: any) {
       'USR': { label: 'Usuário', value: 'USR', color: 'warning' },
     }
 
+    const submitData = () => {
+
+    }
+
     useEffect(() => {
-        if (id) {
-            usuarioServices.buscarPorId(id)
-                .then((response: IUsuario) => {
-                    setUsuario(response);
-                    setPermissao(response.permissao);
-                    setUnidade(response.unidade_id);
-                });
-        } else router.push('/usuarios');
+        usuarioServices.validaUsuario()
+            .then((response: IUsuario) => {
+                setUsuario(response);
+                setPermissao(response.permissao);
+                setUnidade(response.unidade_id);
+            });
 
         unidadeServices.listaCompleta()
             .then((response: IUnidade[]) => {
                 setUnidades(response);
             })
-    }, [ id ]);
+    }, []);
     
 
     return (
         <Content
             breadcrumbs={[
-                { label: 'Usuários', href: '/usuarios' },
-                { label: usuario ? usuario.nome : 'Novo', href: '/usuarios/' + id },
+                { label: 'Meu Perfil', href: '/eu' },
             ]}
-            titulo={id ? usuario?.nome : 'Novo'}
+            titulo={usuario ? usuario.nome : 'Meu Perfil'}
             tags={
                 usuario ? <div style={{ display: 'flex', gap: '0.2rem' }}>     
                   <Chip color={permissoes[usuario?.permissao].color} size='lg'>{permissoes[usuario?.permissao].label}</Chip>
                 </div> : null
             }
-            pagina="usuarios"
+            pagina=""
         >
             <Box
                 sx={{
@@ -73,7 +73,7 @@ export default function UsuarioDetalhes(props: any) {
                         <Stack>
                             <FormControl>
                                 <FormLabel>Permissao</FormLabel>
-                                <Select value={permissao ? permissao : 'USR'} onChange={(_, value) => value && setPermissao(value)}>
+                                <Select value={permissao ? permissao : 'USR'} disabled>
                                     <Option value="DEV">Desenvolvedor</Option>
                                     <Option value="ADM">Administrador</Option>
                                     <Option value="TEC">Técnico</Option>
@@ -85,7 +85,7 @@ export default function UsuarioDetalhes(props: any) {
                         <Stack>
                             <FormControl>
                                 <FormLabel>Unidade</FormLabel>
-                                <Select value={unidade && unidade} onChange={(_, value) => value && setPermissao(value)}>
+                                <Select value={unidade && unidade} onChange={(_, value) => value && setUnidade(value)}>
                                     {unidades.map((unidade: IUnidade) => <Option value={unidade.id}>{unidade.nome}</Option>) }
                                 </Select>
                             </FormControl>
@@ -101,7 +101,7 @@ export default function UsuarioDetalhes(props: any) {
                                     startDecorator={<EmailRounded />}
                                     placeholder="Email"
                                     sx={{ flexGrow: 1 }}
-                                    readOnly
+                                    disabled
                                 />
                             </FormControl>
                         </Stack>
@@ -111,7 +111,7 @@ export default function UsuarioDetalhes(props: any) {
                         <Button size="sm" variant="outlined" color="neutral" onClick={() => router.back()}>
                             Cancelar
                         </Button>
-                        <Button size="sm" variant="solid">
+                        <Button size="sm" variant="solid" onClick={submitData}>
                             Salvar
                         </Button>
                         </CardActions>

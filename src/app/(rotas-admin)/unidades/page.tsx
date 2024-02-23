@@ -127,7 +127,7 @@ export default function Unidades() {
         { label: 'Unidades', href: '/unidades' }
       ]}
       titulo='Unidades'
-      pagina='/unidades'
+      pagina='unidades'
     >
       <Snackbar
         variant="solid"
