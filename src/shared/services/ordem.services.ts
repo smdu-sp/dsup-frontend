@@ -1,26 +1,34 @@
 'use server'
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Session, getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
-import { redirect } from "next/navigation";
-import router from "next/router";
+import { useRouter } from "next/navigation";
+import { IUnidade } from "./unidade.services";
+import { IUsuario } from "./usuario.services";
 
 async function logout() {
-  await signOut({ redirect: false });
-  router.replace('/login');
+    const router = useRouter();
+    await signOut({ redirect: false });
+    router.replace('/login');
 }
 
-export interface IUnidade {
+export interface IOrdem {
     id: string;
-    nome: string;
-    sigla: string;
-    codigo: string;
-    status: boolean;
+    unidade_id: string;
+    unidade?: IUnidade;
+    andar: number;
+    sala: string;
+    solicitante_id: string;
+    solicitante?: IUsuario;
+    data_solicitacao: Date;
+    tipo: number;
+    status: number;
+    observacoes: string;
 }
 
-export interface IPaginadoUnidade {
-    data: IUnidade[];
+export interface IPaginadoOrdem {
+    data: IOrdem[];
     total: number;
     pagina: number;
     limite: number;
@@ -28,9 +36,16 @@ export interface IPaginadoUnidade {
 
 const baseURL = process.env.API_URL || 'http://localhost:3000/';
 
-async function buscarTudo(status: string = 'true', pagina: number = 1, limite: number = 10, busca: string = ''): Promise<IPaginadoUnidade> {
+async function buscarTudo(status: number = 1, pagina: number = 1, limite: number = 10,
+    unidade_id: string = '',
+    solicitante_id: string = '',
+    andar: number = 0,
+    sala: string = '',
+    tipo: number = 0
+): Promise<IPaginadoOrdem> {
     const session = await getServerSession(authOptions);
-    const usuarios = await fetch(`${baseURL}ordens/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&busca=${busca}`, {
+    const url = `${baseURL}ordens/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&unidade_id=${unidade_id}&solicitante_id=${solicitante_id}&andar=${andar}&sala=${sala}&tipo=${tipo}`;
+    const ordens = await fetch(`${url}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -40,10 +55,10 @@ async function buscarTudo(status: string = 'true', pagina: number = 1, limite: n
         if (response.status === 401) await logout();
         return response.json();
     })
-    return usuarios;
+    return ordens;
 }
 
-async function buscarPorId(id: string): Promise<IUnidade> {
+async function buscarPorId(id: string): Promise<IOrdem> {
     const session = await getServerSession(authOptions);
     const usuario = await fetch(`${baseURL}ordens/buscar-por-id/${id}`, {
         method: "GET",
@@ -58,23 +73,7 @@ async function buscarPorId(id: string): Promise<IUnidade> {
     return usuario;
 }
 
-async function desativar(id: string): Promise<{ autorizado: boolean }> {
-    const session = await getServerSession(authOptions);
-    const desativado = await fetch(`${baseURL}ordens/desativar/${id}`, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`
-        }
-    }).then(async (response) => {
-        if (response.status === 401) await logout();
-        if (response.status !== 200) return;
-        return response.json();
-    });
-    return desativado;
-}
-
-async function criar({ nome, codigo, sigla, status }: { nome: string, codigo: string, sigla: string, status: string }): Promise<IUnidade> {
+async function criar(ordemDto: { unidade_id: string, andar: number, sala: string, tipo: number, observacoes: string }): Promise<IOrdem> {
     const session = await getServerSession(authOptions);
     const novaUnidade = await fetch(`${baseURL}ordens/criar`, {
         method: "POST",
@@ -82,12 +81,7 @@ async function criar({ nome, codigo, sigla, status }: { nome: string, codigo: st
             "Content-Type": "application/json",
             "Authorization": `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify({ 
-            nome,
-            sigla,
-            codigo,
-            status: status === 'true'
-        })
+        body: JSON.stringify(ordemDto)
     }).then(async (response) => {
         if (response.status === 401) await logout();
         if (response.status !== 201) return;
@@ -96,65 +90,8 @@ async function criar({ nome, codigo, sigla, status }: { nome: string, codigo: st
     return novaUnidade;
 }
 
-async function atualizar({ id, nome, codigo, sigla, status }: { id: string, nome: string, codigo: string, sigla: string, status: string }): Promise<IUnidade> {
-    const session = await getServerSession(authOptions);
-    const atualizado = await fetch(`${baseURL}ordens/atualizar/${id}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-            nome,
-            sigla,
-            codigo,
-            status: status === 'true'
-        })
-    }).then(async (response) => {
-        if (response.status === 401) await logout();
-        if (response.status !== 200) return;
-        return response.json();
-    });
-    return atualizado;
-}
-
-async function ativar(id: string): Promise<IUnidade> {
-    const session = await getServerSession(authOptions);
-    const ativado = await fetch(`${baseURL}ordens/atualizar/${id}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({ status: true })
-    }).then(async (response) => {
-        if (response.status === 401) await logout();
-        if (response.status !== 200) return;
-        return response.json();
-    });
-    return ativado;
-}
-
-async function validaUsuario(): Promise<IUnidade> {
-    const session = await getServerSession(authOptions);
-    const usuario = await fetch(`${baseURL}ordens/valida-usuario`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`
-        }
-    }).then(async (response) => {
-        if (response.status === 401) await logout();
-        return response.json();
-    })
-    return usuario;
-}
-
-export { 
-    ativar,
-    atualizar,
+export {
     buscarTudo,
     buscarPorId,
-    criar,
-    desativar
+    criar
 };

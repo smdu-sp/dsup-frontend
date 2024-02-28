@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import { Box, Button, Card, CardActions, CardOverflow, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormLabel, Input, Option, Select, Stack } from "@mui/joy";
-import { EmailRounded } from "@mui/icons-material";
+import { useContext, useEffect, useState } from "react";
+import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormLabel, Input, Option, Select, Stack } from "@mui/joy";
+import { Business, Check, EmailRounded } from "@mui/icons-material";
 import { useRouter } from 'next/navigation';
 import { OverridableStringUnion } from '@mui/types';
 
@@ -11,13 +11,15 @@ import { IUnidade } from "@/shared/services/unidade.services";
 import { IUsuario } from "@/shared/services/usuario.services";
 import * as usuarioServices from "@/shared/services/usuario.services";
 import * as unidadeServices from "@/shared/services/unidade.services";
+import { AlertsContext } from "@/providers/alertsProvider";
 
 export default function UsuarioDetalhes() {
     const [usuario, setUsuario] = useState<IUsuario>();
     const [permissao, setPermissao] = useState('');
     const [unidades, setUnidades] = useState<IUnidade[]>([]);
-    const [unidade, setUnidade] = useState('');
+    const [unidade_id, setUnidade_id] = useState('');
     const router = useRouter();
+    const { setAlert } = useContext(AlertsContext);  
 
     const permissoes: Record<string, { label: string, value: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }> = {
       'DEV': { label: 'Desenvolvedor', value: 'DEV', color: 'primary' },
@@ -27,7 +29,15 @@ export default function UsuarioDetalhes() {
     }
 
     const submitData = () => {
-
+        if (usuario){
+            usuarioServices.atualizar(usuario.id, {
+                unidade_id,
+            }).then((response) => {
+                if (response.id) {
+                    setAlert('Usuário alterado!', 'Dados atualizados com sucesso!', 'success', 3000, Check);              
+                }
+            })
+        }
     }
 
     useEffect(() => {
@@ -35,7 +45,7 @@ export default function UsuarioDetalhes() {
             .then((response: IUsuario) => {
                 setUsuario(response);
                 setPermissao(response.permissao);
-                setUnidade(response.unidade_id);
+                setUnidade_id(response.unidade_id);
             });
 
         unidadeServices.listaCompleta()
@@ -85,9 +95,22 @@ export default function UsuarioDetalhes() {
                         <Stack>
                             <FormControl>
                                 <FormLabel>Unidade</FormLabel>
-                                <Select value={unidade && unidade} onChange={(_, value) => value && setUnidade(value)}>
-                                    {unidades.map((unidade: IUnidade) => <Option value={unidade.id}>{unidade.nome}</Option>) }
-                                </Select>
+                                <Autocomplete
+                                    startDecorator={<Business />}
+                                    options={unidades}
+                                    getOptionLabel={(option) => option && `${option.nome} (${option.sigla})`}
+                                    placeholder="Unidade"
+                                    value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
+                                    onChange={(_, value) => value  && setUnidade_id(value?.id)}
+                                    filterOptions={(options, { inputValue }) => {
+                                        if (unidades) return (options as IUnidade[]).filter((option) => (
+                                            (option).nome.toLowerCase().includes(inputValue.toLowerCase()) || 
+                                            (option).sigla.toLowerCase().includes(inputValue.toLowerCase())
+                                        ));
+                                        return [];
+                                    }}
+                                    noOptionsText="Nenhuma unidade encontrada"
+                                />
                             </FormControl>
                         </Stack>
                         <Divider />

@@ -6,12 +6,17 @@ import Usuario from './Usuario';
 import { ListSubheader } from '@mui/material';
 import { getSession } from 'next-auth/react';
 import { UsuarioToken } from '@/shared/interfaces/usuario-token';
+import * as usuarioServices from '@/shared/services/usuario.services';
+import { IUsuario } from '@/shared/services/usuario.services';
 
 const renderMenu = (menu: IMenu, pagina?: string) => {
   const [admin, setAdmin] = useState(false);
-  getSession().catch((error) => console.log(error)).then((session) => {
-    if (session) setAdmin(['ADM', 'DEV'].includes(session.usuario.permissao));
-  });  
+  useEffect(() => {
+    usuarioServices.validaUsuario()
+      .then((response: IUsuario) => {
+          setAdmin(['ADM', 'DEV'].includes(response.permissao));
+      });    
+  }, [])
   return (
       <List
         size="sm"
@@ -59,14 +64,6 @@ export default function SecondSidebar({
   menuOverride?: IMenu;
 }) {
   const { closeSidebar } = useContext(MenuContext);
-  useEffect(() => {
-    getSession().catch((error) => console.log(error)).then((session) => {
-      if (session) setUsuario(session.usuario);
-    });    
-  }, []);
-  const [usuario, setUsuario] = useState<UsuarioToken>();
-  // const [menuRender, setMenuRender]
-
   return (
     <>
       <Box

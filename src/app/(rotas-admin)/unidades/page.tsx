@@ -4,7 +4,7 @@ import Content from '@/components/Content';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import * as unidadeServices from '@/shared/services/unidade.services';
 import { Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
-import { Cancel, Check, Edit, Search, Warning } from '@mui/icons-material';
+import { Add, Cancel, Check, Clear, Edit, Refresh, Search, Warning } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
 import { TablePagination } from '@mui/material';
@@ -60,7 +60,7 @@ export default function Unidades() {
         setPagina(response.pagina);
         setLimite(response.limite);
         setUnidades(response.data);
-      });    
+      });
   }
   
   const desativaUnidade = async (id: string) => {
@@ -121,6 +121,15 @@ export default function Unidades() {
     });
   }
 
+  const limpaFitros = () => {
+    setBusca('');
+    setStatus('true');
+    setPagina(1);
+    setLimite(10);
+    router.push(pathname);
+    buscaUnidades();
+  }
+
   return (
     <Content
       breadcrumbs={[
@@ -167,8 +176,11 @@ export default function Unidades() {
           '& > *': {
             minWidth: { xs: '120px', md: '160px' },
           },
+          alignItems: 'end',
         }}
       >
+        <IconButton size='sm' onClick={buscaUnidades}><Refresh /></IconButton>
+        <IconButton size='sm' onClick={limpaFitros}><Clear /></IconButton>
         <FormControl size="sm">
           <FormLabel>Status: </FormLabel>
           <Select
@@ -203,8 +215,8 @@ export default function Unidades() {
         <thead>
           <tr>
             <th>Código</th>
-            <th>Nome</th>
             <th>Sigla</th>
+            <th>Nome</th>
             <th style={{ textAlign: 'right' }}></th>
           </tr>
         </thead>
@@ -217,8 +229,8 @@ export default function Unidades() {
                   undefined
             }}>
               <td>{unidade.codigo}</td>
-              <td>{unidade.nome}</td>
               <td>{unidade.sigla}</td>
+              <td>{unidade.nome}</td>
               <td>
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                   {!unidade.status ? (
@@ -255,7 +267,15 @@ export default function Unidades() {
         rowsPerPageOptions={[10, 25, 50, 100]}
         labelRowsPerPage="Registros por página"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+        sx={{
+          mr: '2rem',
+        }}
       /> : null}
+      <IconButton onClick={() => router.push('/unidades/detalhes/')} color='primary' variant='soft' size='lg' sx={{
+        position: 'fixed',
+        bottom: '2rem',
+        right: '2rem',
+      }}><Add /></IconButton>
     </Content>
   );
 }

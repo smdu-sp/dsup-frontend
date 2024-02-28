@@ -1,11 +1,19 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
-import { redirect } from "next/navigation";
+'use client'
 
-export default async function RotasAdmin({children}:{children: React.ReactNode}) {
-  const session = await getServerSession(authOptions);
-  if (!session || !['ADM', 'DEV'].includes(session.usuario.permissao)) {
-    redirect('/login');
-  }
+import * as usuarioServices from '@/shared/services/usuario.services';
+import { IUsuario } from "@/shared/services/usuario.services";
+import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
+
+export default function RotasAdmin({children}:{children: React.ReactNode}) {
+  const router = useRouter();
+  useEffect(() => {
+    usuarioServices.validaUsuario()
+      .then((usuario: IUsuario) => {
+        if (!usuario || !['ADM', 'DEV'].includes(usuario.permissao)) {
+          router.replace('/');
+        }
+      });
+  }, [])
   return <>{children}</>;
 }

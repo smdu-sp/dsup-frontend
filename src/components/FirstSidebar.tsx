@@ -1,23 +1,16 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import Image from 'next/image';
 import { Tooltip, GlobalStyles, List, ListItemButton, Sheet, IconButton, Button, Typography, Stack, Snackbar } from '@mui/joy';
-import { Close, Logout, Menu, Person } from '@mui/icons-material';
+import { Close, Logout, Menu } from '@mui/icons-material';
 
 import iconLogo from '@/assets/sis-icon.png';
 import { MenuContext } from '@/shared/contexts/MenuContext';
-import { getSession, signOut } from 'next-auth/react';
-import { UsuarioToken } from '@/shared/interfaces/usuario-token';
+import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 
 export default function FirstSidebar() {
-  useEffect(() => {
-    getSession().catch((error) => console.log(error)).then((session) => {
-      if (session) setUsuario(session.usuario);
-    });    
-  }, []);
   const router = useRouter();
-  const [usuario, setUsuario] = useState<UsuarioToken>();
   const [open, setOpen] = useState(false);
   const { sidebarStatus, toggleSidebar } = useContext(MenuContext);
 

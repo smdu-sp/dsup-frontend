@@ -11,6 +11,7 @@ export default function Content({
     children,
     titulo = 'Dashboard',
     tags = [],
+    button = null,
     pagina,
     breadcrumbs,
     menuOverride,
@@ -18,6 +19,7 @@ export default function Content({
     children?: React.ReactNode;
     titulo?: string;
     tags?: React.ReactNode;
+    button?: React.ReactNode;
     pagina?: string;
     breadcrumbs?: {
       label: string;
@@ -58,7 +60,7 @@ export default function Content({
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0,
-            height: '100dvh',
+            height: '100%',
             gap: 1,
           }}
         >
@@ -73,10 +75,14 @@ export default function Content({
                   flexDirection: { xs: 'column', sm: 'row' },
                   alignItems: { xs: 'start', sm: 'center' },
                   flexWrap: 'wrap',
+                  justifyContent: { xs: 'start', sm: 'space-between' },
               }}
           >
-            <Typography level="h2">{titulo}</Typography>
-            {tags ? tags : null}
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Typography level="h2">{titulo}</Typography>
+              {tags ? tags : null}
+            </Box>
+            {button ? button : null}    
           </Box>
           {children}
         </Box>

@@ -10,6 +10,7 @@ export default function Home() {
       titulo='Página Inicial'
       pagina='/'
     >
+      
     </Content>
   );
 }

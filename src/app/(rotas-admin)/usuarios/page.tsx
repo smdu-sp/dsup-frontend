@@ -3,13 +3,15 @@
 import Content from '@/components/Content';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import * as usuarioServices from '@/shared/services/usuario.services';
-import { Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
-import { Cancel, Check, Edit, Search, Warning } from '@mui/icons-material';
+import * as unidadeServices from '@/shared/services/unidade.services';
+import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
+import { Add, ArrowBack, Cancel, Check, Clear, Edit, Refresh, Search, Warning } from '@mui/icons-material';
 import { IPaginadoUsuario, IUsuario } from '@/shared/services/usuario.services';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
 import { TablePagination } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
+import { IUnidade } from '@/shared/services/unidade.services';
 
 export default function Usuarios() {
   const searchParams = useSearchParams();
@@ -20,6 +22,9 @@ export default function Usuarios() {
   const [total, setTotal] = useState(searchParams.get('total') ? Number(searchParams.get('total')) : 1);
   const [status, setStatus] = useState(searchParams.get('status') ? Number(searchParams.get('status')) : 1);
   const [busca, setBusca] = useState(searchParams.get('busca') || '');
+  const [permissao, setPermissao] = useState('');
+  const [unidade_id, setUnidade_id] = useState('');
+  const [unidades, setUnidades] = useState<IUnidade[]>([]);
 
   const confirmaVazio: {
     aberto: boolean,
@@ -41,8 +46,12 @@ export default function Usuarios() {
   const router = useRouter();
 
   useEffect(() => {
+    unidadeServices.listaCompleta()
+        .then((response: IUnidade[]) => {
+            setUnidades(response);
+        })
     buscaUsuarios();
-  }, [ status, pagina, limite ]);
+  }, [ status, pagina, limite, permissao, unidade_id ]);
   
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -54,13 +63,24 @@ export default function Usuarios() {
   );
 
   const buscaUsuarios = async () => {
-    usuarioServices.buscarTudo(status, pagina, limite, busca)
+    usuarioServices.buscarTudo(status, pagina, limite, busca, permissao, unidade_id)
       .then((response: IPaginadoUsuario) => {
         setTotal(response.total);
         setPagina(response.pagina);
         setLimite(response.limite);
         setUsuarios(response.data);
       });    
+  }
+
+  const limpaFitros = () => {
+    setBusca('');
+    setStatus(1);
+    setUnidade_id('');
+    setPermissao('');
+    setPagina(1);
+    setLimite(10);
+    router.push(pathname);
+    buscaUsuarios();
   }
   
   const autorizaUsuario = async (id: string) => {
@@ -86,8 +106,7 @@ export default function Usuarios() {
   }
 
   const mudaPagina = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
-    novaPagina: number,
+    _: React.MouseEvent<HTMLButtonElement> | null, novaPagina: number,
   ) => {
     router.push(pathname + '?' + createQueryString('pagina', String(novaPagina + 1)));
     setPagina(novaPagina + 1);
@@ -174,23 +193,63 @@ export default function Usuarios() {
           '& > *': {
             minWidth: { xs: '120px', md: '160px' },
           },
+          alignItems: 'end',
         }}
       >
+        <IconButton size='sm' onClick={buscaUsuarios}><Refresh /></IconButton>
+        <IconButton size='sm' onClick={limpaFitros}><Clear /></IconButton>
         <FormControl size="sm">
           <FormLabel>Status: </FormLabel>
           <Select
             size="sm"
             value={status}
-            onChange={(event, newValue) => {
+            onChange={(_, newValue) => {
               router.push(pathname + '?' + createQueryString('status', String(newValue! || 1)));
               setStatus(newValue! || 1);
             }}
           >
             <Option value={1}>Ativos</Option>
             <Option value={2}>Inativos</Option>
-            <Option value={3}>Esperando autorização</Option>
             <Option value={4}>Todos</Option>
           </Select>
+        </FormControl>
+        <FormControl size="sm">
+          <FormLabel>Permissão: </FormLabel>
+          <Select
+            size="sm"
+            value={permissao}
+            onChange={(_, newValue) => {
+              router.push(pathname + '?' + createQueryString('permissao', newValue! || ''));
+              setPermissao(newValue! || '');
+            }}
+          >
+            <Option value=''>Todos</Option>
+            <Option value='USR'>Usuário</Option>
+            <Option value='TEC'>Técnicos</Option>
+            <Option value='ADM'>Administrador</Option>
+            <Option value='DEV'>Desenvolvedor</Option>
+          </Select>
+        </FormControl>
+        <FormControl sx={{ flex: 1 }} size="sm">
+          <FormLabel>Unidade: </FormLabel>
+          <Autocomplete
+              options={unidades}
+              getOptionLabel={(option) => option && `${option.nome} (${option.sigla})`}
+              placeholder="Unidade"
+              value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
+              onChange={(_, value) => {
+                router.push(pathname + '?' + createQueryString('unidade_id', value ? value.id : ''));
+                setUnidade_id(value ? value.id : '') ;
+              }}
+              filterOptions={(options, { inputValue }) => {
+                  if (unidades) return (options as IUnidade[]).filter((option) => (
+                      (option).nome.toLowerCase().includes(inputValue.toLowerCase()) || 
+                      (option).sigla.toLowerCase().includes(inputValue.toLowerCase())
+                  ));
+                  return [];
+              }}
+              noOptionsText="Nenhuma unidade encontrada"
+          />
         </FormControl>
         <FormControl sx={{ flex: 1 }} size="sm">
           <FormLabel>Buscar: </FormLabel>
@@ -207,11 +266,13 @@ export default function Usuarios() {
           />
         </FormControl>
       </Box>
-      <Table hoverRow>
+      <Table hoverRow sx={{ tableLayout: 'auto' }}>
         <thead>
           <tr>
             <th>Nome</th>
+            <th>E-mail</th>
             <th>Usuário</th>
+            <th>Unidade</th>
             <th></th>
             <th style={{ textAlign: 'right' }}></th>
           </tr>
@@ -219,7 +280,6 @@ export default function Usuarios() {
         <tbody>
           {usuarios ? usuarios.map((usuario) => (
             <tr key={usuario.id} style={{
-              cursor: 'pointer',
               backgroundColor: usuario.status === 3 ? 
                 theme.vars.palette.warning.plainActiveBg : 
                 usuario.status === 2 ? 
@@ -227,10 +287,18 @@ export default function Usuarios() {
                   undefined
             }}>
               <td>{usuario.nome}</td>
+              <td>{usuario.email}</td>
               <td>{usuario.login}</td>
+              <td>{usuario.unidade && <Chip onClick={() => {
+                setUnidade_id(usuario.unidade_id);
+                router.push(pathname + '?' + createQueryString('unidade_id', usuario.unidade_id));
+              }} variant='outlined' color='neutral' title={usuario.unidade.nome}>{usuario.unidade.sigla}</Chip>}</td>
               <td>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>         
-                  <Chip color={permissoes[usuario.permissao].color} size='sm'>{permissoes[usuario.permissao].label}</Chip>
+                  <Chip onClick={() => {
+                    setPermissao(usuario.permissao);
+                    router.push(pathname + '?' + createQueryString('permissao', usuario.permissao));
+                  }} color={permissoes[usuario.permissao].color}>{permissoes[usuario.permissao].label}</Chip>
                 </div>
               </td>
               <td>
@@ -243,7 +311,7 @@ export default function Usuarios() {
                     </Tooltip>                    
                   )}
                   <Tooltip title="Detalhes" arrow placement="top">
-                    <IconButton component="a" href={`/usuarios/${usuario.id}`} size="sm" color="warning">
+                    <IconButton component="a" href={`/usuarios/detalhes/${usuario.id}`} size="sm" color="warning">
                       <Edit />
                     </IconButton>
                   </Tooltip>
@@ -255,7 +323,7 @@ export default function Usuarios() {
                 </div>
               </td>
             </tr>
-          )) : <tr><td colSpan={4}>Nenhum usuário encontrado</td></tr>}
+          )) : <tr><td colSpan={6}>Nenhum usuário encontrado</td></tr>}
         </tbody>
       </Table>
       {(total && total > 0) ? <TablePagination
@@ -268,7 +336,15 @@ export default function Usuarios() {
         rowsPerPageOptions={[10, 25, 50, 100]}
         labelRowsPerPage="Registros por página"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+        sx={{
+          mr: '2rem',
+        }}
       /> : null}
+      <IconButton onClick={() => router.push('/usuarios/detalhes/')} color='primary' variant='soft' size='lg' sx={{
+        position: 'fixed',
+        bottom: '2rem',
+        right: '2rem',
+      }}><Add /></IconButton>
     </Content>
   );
 }

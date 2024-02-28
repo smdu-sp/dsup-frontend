@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Session, getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
+import { IUnidade } from "./unidade.services";
 
 export interface IUsuario {
     id: string;
@@ -13,9 +14,17 @@ export interface IUsuario {
     permissao: string;
     status: number;
     unidade_id: string;
+    unidade?: IUnidade;
     ultimoLogin: Date;
     criadoEm: Date;
     atualizadoEm: Date;
+}
+
+export interface IUpdateUsuario {
+    id?: string;
+    permissao?: string;
+    status?: number;
+    unidade_id?: string;
 }
 
 export interface IPaginadoUsuario {
@@ -27,9 +36,24 @@ export interface IPaginadoUsuario {
 
 const baseURL = process.env.API_URL || 'http://localhost:3000/';
 
-async function buscarTudo(status: number = 1, pagina: number = 1, limite: number = 10, busca: string = ''): Promise<IPaginadoUsuario> {
+async function listaCompleta(): Promise<IUsuario[]> {
     const session = await getServerSession(authOptions);
-    const usuarios = await fetch(`${baseURL}usuarios/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&busca=${busca}`, {
+    const usuarios = await fetch(`${baseURL}usuarios/lista-completa`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        }
+    }).then((response) => {
+        if (response.status === 401) signOut();
+        return response.json();
+    })
+    return usuarios;
+}
+
+async function buscarTudo(status: number = 1, pagina: number = 1, limite: number = 10, busca: string = '', permissao: string = '', unidade_id: string = ''): Promise<IPaginadoUsuario> {
+    const session = await getServerSession(authOptions);
+    const usuarios = await fetch(`${baseURL}usuarios/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&busca=${busca}&permissao=${permissao}&unidade_id=${unidade_id}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -73,6 +97,22 @@ async function autorizar(id: string): Promise<{ autorizado: boolean }> {
     return autorizado;
 }
 
+async function atualizar(id: string, data: IUpdateUsuario): Promise<IUsuario> {
+    const session = await getServerSession(authOptions);
+    const autorizado = await fetch(`${baseURL}usuarios/atualizar/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        }, body: JSON.stringify(data)
+    }).then((response) => {
+        if (response.status === 401) signOut();
+        if (response.status !== 200) return;
+        return response.json();
+    })
+    return autorizado;
+}
+
 async function desativar(id: string): Promise<{ autorizado: boolean }> {
     const session = await getServerSession(authOptions);
     const desativado = await fetch(`${baseURL}usuarios/desativar/${id}`, {
@@ -105,9 +145,11 @@ async function validaUsuario(): Promise<IUsuario> {
 }
 
 export { 
-    buscarTudo,
-    buscarPorId,
+    atualizar,
     autorizar,
+    buscarPorId,
+    buscarTudo,
     desativar,
+    listaCompleta,
     validaUsuario
 };

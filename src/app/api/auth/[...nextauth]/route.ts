@@ -36,6 +36,19 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       session = token.user as any;
       session.usuario = jwtDecode(session.access_token);
+      const now = new Date();
+      if (session.usuario.exp*1000 < now.getTime()) {
+        const response = await fetch(`${process.env.API_URL}refresh`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+          }, body: JSON.stringify({ refresh_token: session.refresh_token })
+        });
+        const { access_token, refresh_token } = await response.json();
+        session.access_token = access_token;
+        session.refresh_token = refresh_token;
+        session.usuario = jwtDecode(access_token);
+      }
       return session;
     }
   }

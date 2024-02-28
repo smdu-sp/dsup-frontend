@@ -24,7 +24,7 @@ const baseURL = process.env.API_URL || 'http://localhost:3000/';
 
 async function listaCompleta(): Promise<IUnidade[]> {
     const session = await getServerSession(authOptions);
-    const usuarios = await fetch(`${baseURL}unidades/lista-completa`, {
+    const unidades = await fetch(`${baseURL}unidades/lista-completa`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -34,12 +34,12 @@ async function listaCompleta(): Promise<IUnidade[]> {
         if (response.status === 401) signOut();
         return response.json();
     })
-    return usuarios;
+    return unidades;
 }
 
 async function buscarTudo(status: string = 'true', pagina: number = 1, limite: number = 10, busca: string = ''): Promise<IPaginadoUnidade> {
     const session = await getServerSession(authOptions);
-    const usuarios = await fetch(`${baseURL}unidades/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&busca=${busca}`, {
+    const unidades = await fetch(`${baseURL}unidades/buscar-tudo?status=${status}&pagina=${pagina}&limite=${limite}&busca=${busca}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -49,12 +49,12 @@ async function buscarTudo(status: string = 'true', pagina: number = 1, limite: n
         if (response.status === 401) signOut();
         return response.json();
     })
-    return usuarios;
+    return unidades;
 }
 
 async function buscarPorId(id: string): Promise<IUnidade> {
     const session = await getServerSession(authOptions);
-    const usuario = await fetch(`${baseURL}unidades/buscar-por-id/${id}`, {
+    const unidade = await fetch(`${baseURL}unidades/buscar-por-id/${id}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -64,7 +64,7 @@ async function buscarPorId(id: string): Promise<IUnidade> {
         if (response.status === 401) signOut();
         return response.json();
     })
-    return usuario;
+    return unidade;
 }
 
 async function desativar(id: string): Promise<{ autorizado: boolean }> {
