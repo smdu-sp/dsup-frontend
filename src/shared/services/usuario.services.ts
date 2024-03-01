@@ -20,6 +20,14 @@ export interface IUsuario {
     atualizadoEm: Date;
 }
 
+export interface ICreateUsuario {
+    nome: string;
+    email: string;
+    login: string;
+    permissao: string;
+    unidade_id?: string;
+}
+
 export interface IUpdateUsuario {
     id?: string;
     permissao?: string;
@@ -97,6 +105,23 @@ async function autorizar(id: string): Promise<{ autorizado: boolean }> {
     return autorizado;
 }
 
+async function criar(data: ICreateUsuario): Promise<IUsuario> {
+    const session = await getServerSession(authOptions);
+    const criado = await fetch(`${baseURL}usuarios/criar`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        }, body: JSON.stringify(data)
+    }).then((response) => {
+        console.log(response.status);
+        if (response.status === 401) signOut();
+        // if (response.status !== 200) return;
+        return response.json();
+    })
+    return criado;
+}
+
 async function atualizar(id: string, data: IUpdateUsuario): Promise<IUsuario> {
     const session = await getServerSession(authOptions);
     const autorizado = await fetch(`${baseURL}usuarios/atualizar/${id}`, {
@@ -144,11 +169,32 @@ async function validaUsuario(): Promise<IUsuario> {
     return usuario;
 }
 
+async function buscarNovo(login: string): Promise<{ login?: string, nome?: string, email?: string, unidade_id?: string, message?: string }> {
+    const session = await getServerSession(authOptions);
+    const usuario = await fetch(`${baseURL}usuarios/buscar-novo?login=${login}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        }
+    }).then((response) => {
+        if (response.status === 401) signOut();
+        if (response.status === 403) {
+            return { message: 'Usuário já cadastrado.'}
+        }
+        if (response.status !== 200) return;
+        return response.json();
+    })
+    return usuario;
+}
+
 export { 
     atualizar,
     autorizar,
+    buscarNovo,
     buscarPorId,
     buscarTudo,
+    criar,
     desativar,
     listaCompleta,
     validaUsuario

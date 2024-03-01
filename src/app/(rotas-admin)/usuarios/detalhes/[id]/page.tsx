@@ -1,8 +1,8 @@
 'use client'
 
 import { useContext, useEffect, useState } from "react";
-import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormLabel, Input, Option, Select, Stack } from "@mui/joy";
-import { Badge, Business, Check, EmailRounded } from "@mui/icons-material";
+import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormLabel, IconButton, Input, Option, Select, Stack } from "@mui/joy";
+import { Badge, Business, Check, Clear, EmailRounded, Warning } from "@mui/icons-material";
 import { useRouter } from 'next/navigation';
 import { OverridableStringUnion } from '@mui/types';
 
@@ -15,9 +15,13 @@ import { AlertsContext } from "@/providers/alertsProvider";
 
 export default function UsuarioDetalhes(props: any) {
     const [usuario, setUsuario] = useState<IUsuario>();
-    const [permissao, setPermissao] = useState('');
+    const [permissao, setPermissao] = useState('USR');
     const [unidades, setUnidades] = useState<IUnidade[]>([]);
     const [unidade_id, setUnidade_id] = useState('');
+    const [nome, setNome] = useState('');
+    const [login, setLogin] = useState('');
+    const [email, setEmail] = useState('');
+    const [novoUsuario, setNovoUsuario] = useState(false);
     const { id } = props.params;
     const router = useRouter();
     const { setAlert } = useContext(AlertsContext);
@@ -36,6 +40,7 @@ export default function UsuarioDetalhes(props: any) {
                     setUsuario(response);
                     setPermissao(response.permissao);
                     setUnidade_id(response.unidade_id);
+                    setEmail(response.email);
                 });
         }
 
@@ -55,7 +60,42 @@ export default function UsuarioDetalhes(props: any) {
                     setAlert('Usuário alterado!', 'Dados atualizados com sucesso!', 'success', 3000, Check);              
                 }
             })
+        } else {
+            if (novoUsuario){
+                usuarioServices.criar({
+                    nome, login, email, unidade_id, permissao
+                }).then((response) => {
+                    console.log(response);
+                    if (response.id) {
+                        setAlert('Usuário criado!', 'Dados inseridos com sucesso!', 'success', 3000, Check);
+                        router.push('/usuarios/detalhes/' + response.id);
+                    }
+                })
+            }
         }
+    }
+
+    const buscarNovo = () => {
+        if (login)
+            usuarioServices.buscarNovo(login).then((response) => {
+                if (response.message) setAlert('Erro', response.message, 'warning', 3000, Warning);
+                if (response.email) {
+                    setNome(response.nome ? response.nome : '');
+                    setLogin(response.login ? response.login : '');
+                    setEmail(response.email ? response.email : '');
+                    setUnidade_id(response.unidade_id ? response.unidade_id : '');
+                    setNovoUsuario(true);
+                }
+            })
+    }
+
+    const limpaUsuario = () => {
+        setNovoUsuario(false);
+        setNome('');
+        setLogin('');
+        setEmail('');
+        setUnidade_id('');
+        setPermissao('USR');
     }
     
 
@@ -85,10 +125,41 @@ export default function UsuarioDetalhes(props: any) {
             >
                 <Card sx={{ width: '100%' }}>
                     <Stack spacing={2} >
+                        {!id ? 
+                        <><Stack>
+                            <FormControl>
+                                <FormLabel>Login de rede</FormLabel>
+                                <Input 
+                                    placeholder="Buscar por login de rede" 
+                                    value={login} 
+                                    onChange={e => setLogin(e.target.value)} 
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter') buscarNovo()
+                                    }}
+                                    endDecorator={
+                                    novoUsuario ? <IconButton onClick={limpaUsuario}><Clear /></IconButton> : <Button onClick={buscarNovo} variant="soft">Buscar</Button>}
+                                    readOnly={novoUsuario}
+                                />
+                            </FormControl>
+                        </Stack>
+                        <Divider />
+                        <Stack>
+                            <FormControl>
+                                <FormLabel>Nome</FormLabel>
+                                <Input 
+                                    placeholder="Nome" 
+                                    value={nome} 
+                                    onChange={e => setNome(e.target.value)} 
+                                    readOnly={novoUsuario}
+                                />
+                            </FormControl>
+                        </Stack>
+                        <Divider />
+                        </> : null}
                         <Stack>
                             <FormControl>
                                 <FormLabel>Permissao</FormLabel>
-                                <Select value={permissao ? permissao : 'USR'} onChange={(_, value) => value && setPermissao(value)} 
+                                <Select value={permissao ? permissao : 'USR'} onChange={(_, value) => value && setPermissao(value)}
                                     startDecorator={<Badge />}>
                                     <Option value="DEV">Desenvolvedor</Option>
                                     <Option value="ADM">Administrador</Option>
@@ -124,13 +195,14 @@ export default function UsuarioDetalhes(props: any) {
                             <FormControl sx={{ flexGrow: 1 }}>
                                 <FormLabel>Email</FormLabel>
                                 <Input
-                                    value={usuario ? usuario?.email : 'USR'}
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
                                     size="sm"
                                     type="email"
                                     startDecorator={<EmailRounded />}
                                     placeholder="Email"
                                     sx={{ flexGrow: 1 }}
-                                    readOnly
+                                    readOnly={id ? true : (novoUsuario)}
                                 />
                             </FormControl>
                         </Stack>
