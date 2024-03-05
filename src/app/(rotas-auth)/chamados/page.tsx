@@ -3,7 +3,7 @@
 import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormHelperText, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
-import { Add, Clear, Refresh } from '@mui/icons-material';
+import { Add, Clear, Edit, Refresh } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
 import { TablePagination } from '@mui/material';
@@ -270,23 +270,34 @@ function SearchChamados() {
         </thead>
         <tbody>
           {ordens && ordens.length > 0 ? ordens.map((ordem) => (
-            <tr key={ordem.id} style={{
-              cursor: 'pointer',
-              backgroundColor: !ordem.status ?
-                  theme.vars.palette.danger.plainActiveBg : 
-                  undefined
-            }}>
-              <td>{ordem.solicitante ? ordem.solicitante.nome : '-'}</td>
-              <td>{ordem.unidade && <Chip onClick={() => {
-                setUnidade_id(ordem.unidade_id);
-                router.push(pathname + '?' + createQueryString('unidade_id', ordem.unidade_id));
-              }} variant='outlined' color='neutral' title={ordem.unidade.nome}>{ordem.unidade.sigla}</Chip>}</td>
-              <td><Chip onClick={() => {
-                setTipo(ordem.tipo);
-                router.push(pathname + '?' + createQueryString('tipo', String(ordem.tipo)));
-              }} color={tipos[ordem.tipo].color}>{tipos[ordem.tipo].label}</Chip></td>
-              <td></td>
-            </tr>
+            <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
+              <tr key={ordem.id} style={{
+                  cursor: 'pointer',
+                  backgroundColor: !ordem.status ?
+                      theme.vars.palette.danger.plainActiveBg : 
+                      undefined
+                }}
+              >
+                <td>{ordem.solicitante ? ordem.solicitante.nome : '-'}</td>
+                <td>{ordem.unidade && <Chip onClick={() => {
+                  setUnidade_id(ordem.unidade_id);
+                  router.push(pathname + '?' + createQueryString('unidade_id', ordem.unidade_id));
+                }} variant='outlined' color='neutral' title={ordem.unidade.nome}>{ordem.unidade.sigla}</Chip>}</td>
+                <td><Chip onClick={() => {
+                  setTipo(ordem.tipo);
+                  router.push(pathname + '?' + createQueryString('tipo', String(ordem.tipo)));
+                }} color={tipos[ordem.tipo].color}>{tipos[ordem.tipo].label}</Chip></td>
+                <td>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                    <Tooltip title="Detalhes" arrow placement="top">
+                      <IconButton component="a" href={`/chamados/detalhes/${ordem.id}`} size="sm" color="warning">
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                  </div>
+                </td>
+              </tr>
+            </Tooltip>
           )) : <tr><td colSpan={4}>Nenhuma chamado entontrado</td></tr>}
         </tbody>
       </Table>

@@ -122,6 +122,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             return [];
                                         }}
                                         noOptionsText="Nenhuma unidade encontrada"
+                                        disabled={id ? true : false}
                                     />
                                     <FormHelperText sx={{ color: 'danger.500' }}>{unidade_idError}</FormHelperText>
                                 </FormControl>
@@ -135,6 +136,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             setAndarError('');
                                         }}
                                         placeholder="Andar"
+                                        disabled={id ? true : false}
                                     >
                                         <Option value={8}>8</Option>
                                         <Option value={17}>17</Option>
@@ -160,6 +162,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             setSala(event.target.value && event.target.value)
                                             setSalaError('');
                                         }}
+                                        disabled={id ? true : false}
                                     />
                                     <FormHelperText sx={{ color: 'danger.500' }}>{salaError}</FormHelperText>
                                 </FormControl>
@@ -173,6 +176,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             setTipoError('');
                                         }}
                                         placeholder="Tipo de chamado"
+                                        disabled={id ? true : false}
                                     >
                                         <Option value={1}>Elétrica</Option>
                                         <Option value={2}>Hidráulica</Option>
@@ -195,6 +199,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             setObservacoes(event.target.value && event.target.value)
                                             setObservacoesError('');
                                         }}
+                                        disabled={id ? true : false}
                                     />
                                     <FormHelperText sx={{ color: 'danger.500' }}>{observacoesError}</FormHelperText>
                                 </FormControl>
