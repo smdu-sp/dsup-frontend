@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { IUnidade } from "./unidade.services";
 import { IUsuario } from "./usuario.services";
 
-async function logout() {
+async function Logout() {
     const router = useRouter();
     await signOut({ redirect: false });
     router.replace('/login');
@@ -52,7 +52,7 @@ async function buscarTudo(status: number = 1, pagina: number = 1, limite: number
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then(async (response) => {
-        if (response.status === 401) await logout();
+        if (response.status === 401) await Logout();
         return response.json();
     })
     return ordens;
@@ -67,7 +67,7 @@ async function buscarPorId(id: string): Promise<IOrdem> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then(async (response) => {
-        if (response.status === 401) await logout();
+        if (response.status === 401) await Logout();
         return response.json();
     })
     return usuario;
@@ -83,7 +83,7 @@ async function criar(ordemDto: { unidade_id: string, andar: number, sala: string
         },
         body: JSON.stringify(ordemDto)
     }).then(async (response) => {
-        if (response.status === 401) await logout();
+        if (response.status === 401) await Logout();
         if (response.status !== 201) return;
         return response.json();
     });

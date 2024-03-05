@@ -9,7 +9,7 @@ import { UsuarioToken } from '@/shared/interfaces/usuario-token';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import { IUsuario } from '@/shared/services/usuario.services';
 
-const renderMenu = (menu: IMenu, pagina?: string) => {
+const RenderMenu = (menu: IMenu, pagina?: string) => {
   const [admin, setAdmin] = useState(false);
   useEffect(() => {
     usuarioServices.validaUsuario()
@@ -116,7 +116,7 @@ export default function SecondSidebar({
             flex: 1,
           }}
         >
-          {menuOverride ? renderMenu(menuOverride, pagina) : renderMenu(menu, pagina)}
+          {menuOverride ? RenderMenu(menuOverride, pagina) : RenderMenu(menu, pagina)}
         </Box>
         <Usuario />
       </Sheet>
