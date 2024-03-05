@@ -1,4 +1,3 @@
-import { authOptions } from './api/auth/[...nextauth]/route';
 import { Business, Handyman, Home, Person } from '@mui/icons-material';
 
 export interface IMenuOption {

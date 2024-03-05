@@ -1,5 +1,5 @@
+import { authOptions } from "@/shared/auth/authOptions";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 
 export default async function RotasLivres({children}:{children: React.ReactNode}) {

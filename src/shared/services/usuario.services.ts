@@ -1,6 +1,6 @@
 'use server'
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/shared/auth/authOptions";
 import { Session, getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
