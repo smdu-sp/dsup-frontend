@@ -344,9 +344,6 @@ function SearchUsuarios() {
         rowsPerPageOptions={[10, 25, 50, 100]}
         labelRowsPerPage="Registros por página"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
-        sx={{
-          mr: '2rem',
-        }}
       /> : null}
       <IconButton onClick={() => router.push('/usuarios/detalhes/')} color='primary' variant='soft' size='lg' sx={{
         position: 'fixed',

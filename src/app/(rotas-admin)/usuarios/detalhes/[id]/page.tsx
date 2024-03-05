@@ -65,7 +65,6 @@ export default function UsuarioDetalhes(props: any) {
                 usuarioServices.criar({
                     nome, login, email, unidade_id, permissao
                 }).then((response) => {
-                    console.log(response);
                     if (response.id) {
                         setAlert('Usuário criado!', 'Dados inseridos com sucesso!', 'success', 3000, Check);
                         router.push('/usuarios/detalhes/' + response.id);

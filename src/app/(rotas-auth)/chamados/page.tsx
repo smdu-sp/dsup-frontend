@@ -262,6 +262,8 @@ function SearchChamados() {
       <Table hoverRow sx={{ tableLayout: 'auto' }}>
         <thead>
           <tr>
+            <th>#</th>
+            <th>Data</th>
             <th>Solicitante</th>
             <th>Unidade</th>
             <th>Tipo</th>
@@ -272,12 +274,13 @@ function SearchChamados() {
           {ordens && ordens.length > 0 ? ordens.map((ordem) => (
             <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
               <tr key={ordem.id} style={{
-                  cursor: 'pointer',
                   backgroundColor: !ordem.status ?
                       theme.vars.palette.danger.plainActiveBg : 
                       undefined
                 }}
               >
+                <td><Chip variant='soft' color='primary'>{ordem.id ? ordem.id : '-'}</Chip></td>
+                <td>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
                 <td>{ordem.solicitante ? ordem.solicitante.nome : '-'}</td>
                 <td>{ordem.unidade && <Chip onClick={() => {
                   setUnidade_id(ordem.unidade_id);
@@ -311,9 +314,6 @@ function SearchChamados() {
         rowsPerPageOptions={[10, 25, 50, 100]}
         labelRowsPerPage="Registros por página"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
-        sx={{
-          mr: '2rem',
-        }}
       /> : null}
     </Content>
   );

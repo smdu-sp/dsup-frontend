@@ -114,7 +114,6 @@ async function criar(data: ICreateUsuario): Promise<IUsuario> {
             "Authorization": `Bearer ${session?.access_token}`
         }, body: JSON.stringify(data)
     }).then((response) => {
-        console.log(response.status);
         if (response.status === 401) signOut();
         // if (response.status !== 200) return;
         return response.json();

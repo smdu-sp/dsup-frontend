@@ -84,9 +84,9 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
         <Content
             breadcrumbs={[
                 { label: 'Chamados', href: '/chamados' },
-                { label: 'Novo chamado', href: '/chamados/detalhes/' || '' },
+                { label: ordem ? `${ordem.id}` : 'Novo chamado', href: `/chamados/detalhes/${id ? id : '' }` || '' },
             ]}
-            titulo={'Novo chamado'}
+            titulo={ordem ? `#${ordem.id}` : 'Novo chamado'}
             pagina="chamados"
         >
             <Box
