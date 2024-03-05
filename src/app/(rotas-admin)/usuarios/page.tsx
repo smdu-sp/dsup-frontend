@@ -5,7 +5,7 @@ import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import * as unidadeServices from '@/shared/services/unidade.services';
 import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
-import { Add, ArrowBack, Cancel, Check, Clear, Edit, Refresh, Search, Warning } from '@mui/icons-material';
+import { Add, Cancel, Check, Clear, Edit, Refresh, Search, Warning } from '@mui/icons-material';
 import { IPaginadoUsuario, IUsuario } from '@/shared/services/usuario.services';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';

@@ -52,9 +52,9 @@ export default function Content({
               md: 3,
             },
             pb: {
-              xs: 2,
-              sm: 2,
-              md: 3,
+              xs: 10,
+              sm: 10,
+              md: 12,
             },
             flex: 1,
             display: 'flex',
