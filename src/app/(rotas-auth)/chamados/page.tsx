@@ -1,7 +1,7 @@
 'use client'
 
 import Content from '@/components/Content';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormHelperText, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
 import { Add, Clear, Refresh } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -15,7 +15,15 @@ import * as unidadeServices from '@/shared/services/unidade.services';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import { IUsuario } from '@/shared/services/usuario.services';
 
-export default function Chamados() {
+export default function Chamados(){
+  return (
+    <Suspense>
+      <SearchChamados />
+    </Suspense>
+  )
+}
+
+function SearchChamados() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [ordens, setOrdens] = useState<IOrdem[]>([]);

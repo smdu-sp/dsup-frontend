@@ -1,7 +1,7 @@
 'use client'
 
 import Content from '@/components/Content';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import * as unidadeServices from '@/shared/services/unidade.services';
 import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
@@ -13,7 +13,15 @@ import { TablePagination } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { IUnidade } from '@/shared/services/unidade.services';
 
-export default function Usuarios() {
+export default function Usuarios(){
+  return (
+    <Suspense>
+      <SearchUsuarios />
+    </Suspense>
+  )
+}
+
+function SearchUsuarios() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [usuarios, setUsuarios] = useState<IUsuario[]>([]);

@@ -1,7 +1,7 @@
 'use client'
 
 import Content from '@/components/Content';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import * as unidadeServices from '@/shared/services/unidade.services';
 import { Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
 import { Add, Cancel, Check, Clear, Edit, Refresh, Search, Warning } from '@mui/icons-material';
@@ -11,7 +11,15 @@ import { TablePagination } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { IPaginadoUnidade, IUnidade } from '@/shared/services/unidade.services';
 
-export default function Unidades() {
+export default function Unidades(){
+  return (
+    <Suspense>
+      <SearchUnidades />
+    </Suspense>
+  )
+}
+
+function SearchUnidades() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [unidades, setUnidades] = useState<IUnidade[]>([]);
