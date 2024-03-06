@@ -24,6 +24,7 @@ export interface IOrdem {
     data_solicitacao: Date;
     tipo: number;
     status: number;
+    prioridade: number;
     observacoes: string;
 }
 
@@ -90,7 +91,24 @@ async function criar(ordemDto: { unidade_id: string, andar: number, sala: string
     return novaUnidade;
 }
 
+async function atualizar(id: string, ordemDto: { prioridade: number }): Promise<IOrdem> {
+    const session = await getServerSession(authOptions);
+    const unidadeAtualizada = await fetch(`${baseURL}ordens/atualizar/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify(ordemDto)
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        return response.json();
+    });
+    return unidadeAtualizada;
+}
+
 export {
+    atualizar,
     buscarTudo,
     buscarPorId,
     criar

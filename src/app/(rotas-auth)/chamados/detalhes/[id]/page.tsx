@@ -20,6 +20,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [unidades, setUnidades] = useState<IUnidade[]>([]);
     const [andar, setAndar] = useState<number>(8);
     const [tipo, setTipo] = useState<number>(4);
+    const [prioridade, setPrioridade] = useState<number>(1);
     const [sala, setSala] = useState('');
     const [observacoes, setObservacoes] = useState('');
     const [salaError, setSalaError] = useState('');
@@ -37,6 +38,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                 setTipo(ordem.tipo);
                 setSala(ordem.sala);
                 setObservacoes(ordem.observacoes);
+                setPrioridade(ordem.prioridade);
             });
         unidadeServices.listaCompleta()
             .then((response: IUnidade[]) => {
@@ -78,15 +80,22 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     setAlert('Chamado criado com sucesso!', 'Sucesso', 'success', 3000, Check);
                     if (ordem) router.push('/chamados/detalhes/' + ordem.id);
                 })
+        } else {
+            ordemService.atualizar(id, {
+                prioridade
+            }).then((ordem: IOrdem) => {
+                setAlert('Chamado alterado com sucesso!', 'Sucesso', 'success', 3000, Check);
+                if (ordem) router.push('/chamados/detalhes/' + ordem.id);
+            })
         }
     }
     return (
         <Content
             breadcrumbs={[
                 { label: 'Chamados', href: '/chamados' },
-                { label: ordem ? `${ordem.id}` : 'Novo chamado', href: `/chamados/detalhes/${id ? id : '' }` || '' },
+                { label: id ? `${id}` : 'Novo chamado', href: `/chamados/detalhes/${id ? id : '' }` || '' },
             ]}
-            titulo={ordem ? `#${ordem.id}` : 'Novo chamado'}
+            titulo={id ? `Chamado #${id}` : 'Novo chamado'}
             pagina="chamados"
         >
             <Box
@@ -101,6 +110,18 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
             >
                 <Card sx={{ width: '100%' }}>
                         <Stack spacing={2}>
+                            {ordem ?
+                            <><Stack direction="row" spacing={2}>
+                                <FormControl sx={{ flexGrow: 1 }}>
+                                    <FormLabel>Prioridade</FormLabel>
+                                    <Select value={prioridade} onChange={(event, value) => setPrioridade(Number(value))}>
+                                        <Option value={1}>Baixa</Option>
+                                        <Option value={2}>Media</Option>
+                                        <Option value={3}>Alta</Option>
+                                        <Option value={4}>Urgente</Option>
+                                    </Select>
+                                </FormControl>
+                            </Stack><Divider/></> : null}
                             <Stack direction="row" spacing={2}>
                                 <FormControl sx={{ flexGrow: 1 }}>
                                     <FormLabel>Unidade</FormLabel>

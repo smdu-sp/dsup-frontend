@@ -3,7 +3,7 @@
 import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormHelperText, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
-import { Add, Clear, Edit, Refresh } from '@mui/icons-material';
+import { Add, Build, Clear, Edit, Refresh } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
 import { TablePagination } from '@mui/material';
@@ -35,6 +35,7 @@ function SearchChamados() {
   const [solicitante_id, setSolicitante_id] = useState(searchParams.get('solicitante_id') || '');
   const [unidades, setUnidades] = useState<IUnidade[]>([]);
   const [usuarios, setUsuarios] = useState<IUsuario[]>([]);
+  const [logado, setLogado] = useState<IUsuario>();
   const [tipo, setTipo] = useState(searchParams.get('tipo') ? Number(searchParams.get('tipo')) : 0);
   const [statusError, setStatusError] = useState('');
 
@@ -60,6 +61,14 @@ function SearchChamados() {
     { label: 'Outros', color: 'neutral' },
   ]
 
+  const prioridades: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
+    { label: '', color: 'neutral' },
+    { label: 'Baixa', color: 'neutral' },
+    { label: 'Média', color: 'success' },
+    { label: 'Alta', color: 'warning' },
+    { label: 'Urgente', color: 'danger' },
+  ]
+
   const [confirma, setConfirma] = useState(confirmaVazio);
 
   const theme = useTheme();
@@ -73,7 +82,11 @@ function SearchChamados() {
     usuarioServices.listaCompleta()
         .then((response: IUsuario[]) => {
             setUsuarios(response);
-        })    
+        })
+    usuarioServices.validaUsuario()
+        .then((response: IUsuario) => {
+            setLogado(response);
+        })
   }, [])
 
   useEffect(() => {
@@ -192,8 +205,10 @@ function SearchChamados() {
               setStatus(newValue || newValue === 0 ? newValue : 1);
             }}
           >
-            <Option value={1}>Ativos</Option>
-            <Option value={2}>Inativos</Option>
+            <Option value={1}>Aberto</Option>
+            <Option value={2}>Serviço</Option>
+            <Option value={3}>Validação</Option>
+            <Option value={4}>Concluído</Option>
             <Option value={0}>Todos</Option>
           </Select>
         </FormControl>
@@ -273,13 +288,8 @@ function SearchChamados() {
         <tbody>
           {ordens && ordens.length > 0 ? ordens.map((ordem) => (
             <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
-              <tr key={ordem.id} style={{
-                  backgroundColor: !ordem.status ?
-                      theme.vars.palette.danger.plainActiveBg : 
-                      undefined
-                }}
-              >
-                <td><Chip variant='soft' color='primary'>{ordem.id ? ordem.id : '-'}</Chip></td>
+              <tr key={ordem.id}>
+                <td><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? ordem.id : '-'}</Chip></td>
                 <td>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
                 <td>{ordem.solicitante ? ordem.solicitante.nome : '-'}</td>
                 <td>{ordem.unidade && <Chip onClick={() => {
@@ -292,6 +302,13 @@ function SearchChamados() {
                 }} color={tipos[ordem.tipo].color}>{tipos[ordem.tipo].label}</Chip></td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                    {['TEC', 'DEV'].includes(logado ? logado.permissao : '') ?
+                      <Tooltip title="Assumir Chamado" arrow placement="top">
+                        <IconButton size="sm" color="warning">
+                          <Build />
+                        </IconButton>
+                      </Tooltip> : 
+                    null}
                     <Tooltip title="Detalhes" arrow placement="top">
                       <IconButton component="a" href={`/chamados/detalhes/${ordem.id}`} size="sm" color="warning">
                         <Edit />
@@ -301,7 +318,7 @@ function SearchChamados() {
                 </td>
               </tr>
             </Tooltip>
-          )) : <tr><td colSpan={4}>Nenhuma chamado entontrado</td></tr>}
+          )) : <tr><td colSpan={6}>Nenhuma chamado entontrado</td></tr>}
         </tbody>
       </Table>
       {(total && total > 0) ? <TablePagination
