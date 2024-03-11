@@ -73,9 +73,12 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     }
 
     function handleAvaliar(servico_id: string) {
-        servicoServices.avaliarServico(servico_id, servicoAtualStatus, servicoAtualObservacao).then((response: IServico) => {
-            setAlert('Ordem avaliada com sucesso!', 'Sucesso', 'success', 3000, Check);
-            atualizaDados();
+        console.log(servico_id, servicoAtualStatus, servicoAtualObservacao);
+        servicoServices.avaliarServico(servico_id, { status: servicoAtualStatus, observacao: servicoAtualObservacao}).then((response: IServico) => {
+            if (response.status === servicoAtualStatus) {
+                setAlert('Ordem avaliada com sucesso!', 'Sucesso', 'success', 3000, Check);
+                atualizaDados();
+            }
         })
     }
 
