@@ -215,8 +215,8 @@ function SearchChamados() {
             }}
           >
             <Option value={1}>Aberto</Option>
-            <Option value={2}>Serviço</Option>
-            <Option value={3}>Validação</Option>
+            <Option value={2}>Em andamento</Option>
+            <Option value={3}>Aguardando validação</Option>
             <Option value={4}>Concluído</Option>
             <Option value={0}>Todos</Option>
           </Select>

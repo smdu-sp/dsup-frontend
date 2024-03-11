@@ -61,7 +61,7 @@ function SearchHome() {
         <Card variant="solid" color="warning" invertedColors sx={{ flexGrow: 0.5 }}>
           <CardContent orientation="horizontal">
             <CardContent sx={{ textAlign: 'right' }}>
-              <Typography sx={{ fontSize: '15rem' }}>{naoAtribuidos}</Typography>
+              <Typography sx={{ fontSize: '15rem' }}>{permissao === 'USR' ? concluidos : naoAtribuidos}</Typography>
               <Typography level="body-lg" >Chamados {permissao === 'USR' ? 'concluídos' : 'nao atribuidos'}</Typography>
             </CardContent>
           </CardContent>

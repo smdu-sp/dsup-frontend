@@ -4,13 +4,17 @@ import Content from "@/components/Content";
 import { Abc, Business, Check } from "@mui/icons-material";
 import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, FormHelperText } from "@mui/joy";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
-import * as ordemService from "@/shared/services/ordem.services";
+import { use, useContext, useEffect, useState } from "react";
+import * as servicoServices from "@/shared/services/servico.services";
+import * as ordemServices from "@/shared/services/ordem.services";
 import * as unidadeServices from "@/shared/services/unidade.services";
+import * as usuarioServices from "@/shared/services/usuario.services";
 import { IOrdem } from "@/shared/services/ordem.services";
 import { IUnidade } from "@/shared/services/unidade.services";
 import { AlertsContext } from "@/providers/alertsProvider";
 import { IServico } from "@/shared/services/servico.services";
+import { IUsuario } from "@/shared/services/usuario.services";
+import { Typography } from "@mui/material";
 
 export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const router = useRouter();
@@ -30,9 +34,12 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [andarError, setAndarError] = useState('');
     const [tipoError, setTipoError] = useState('');
     const [servicos, setServicos] = useState<IServico[]>([]);
+    const [usuario, setUsuario] = useState<IUsuario>();
+    const [servicoAtualStatus, setServicoAtualStatus] = useState(1);
+    const [servicoAtualObservacao, setServicoAtualObservacao] = useState('');
 
-    useEffect(() => {
-        if (id) ordemService.buscarPorId(id)
+    function atualizaDados() {
+        if (id) ordemServices.buscarPorId(id)
             .then((ordem: IOrdem) => {
                 setOrdem(ordem);
                 setUnidade_id(ordem.unidade_id);
@@ -47,7 +54,30 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
             .then((response: IUnidade[]) => {
                 setUnidades(response);
             })
+        usuarioServices.validaUsuario().then((response: IUsuario) => {
+            setUsuario(response);
+        })
+    }
+
+    useEffect(() => {
+        atualizaDados();
     }, [ id ]);
+
+    function handleFinalizar(servico_id: string) {
+        servicoServices.finalizarServico(servico_id).then((response: IServico) => {
+            if (response.status === 2) {
+                setAlert('Ordem finalizada com sucesso!', 'Sucesso', 'success', 3000, Check);
+                atualizaDados();
+            }
+        })
+    }
+
+    function handleAvaliar(servico_id: string) {
+        servicoServices.avaliarServico(servico_id, servicoAtualStatus, servicoAtualObservacao).then((response: IServico) => {
+            setAlert('Ordem avaliada com sucesso!', 'Sucesso', 'success', 3000, Check);
+            atualizaDados();
+        })
+    }
 
     function handleSubmit() {
         if (!id) {
@@ -73,7 +103,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                 erros++;
             }
             if (erros === 0)
-                ordemService.criar({
+                ordemServices.criar({
                     unidade_id,
                     andar,
                     sala,
@@ -84,7 +114,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     if (ordem) router.push('/chamados/detalhes/' + ordem.id);
                 })
         } else {
-            ordemService.atualizar(id, {
+            ordemServices.atualizar(id, {
                 prioridade
             }).then((ordem: IOrdem) => {
                 setAlert('Chamado alterado com sucesso!', 'Sucesso', 'success', 3000, Check);
@@ -113,8 +143,57 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     gap: 2,
                 }}
             >
-                { servicos ? servicos.map((servico: IServico) => (
-                    <Card sx={{ width: '100%' }}>
+                { servicos ? servicos.map((servico: IServico, index: number) => (
+                    <>
+                    {servico.status === 1 ? null : 
+                        <Card>
+                            {(servico.status === 2 && usuario?.permissao !== 'USR') || (servico.status < 2) ? <Typography>Aguardando avaliação</Typography> :
+                            <Stack spacing={2}>
+                                <Stack direction="row" spacing={2}>
+                                    <FormControl sx={{ flexGrow: 1 }}>
+                                        <FormLabel>O problema foi solucionado?</FormLabel>
+                                        <Select 
+                                            value={index === (servicos.length - 1) && servico.status === 2 ? servicoAtualStatus : servico.status}
+                                            onChange={(_, value) => {
+                                                if (index === (servicos.length - 1))
+                                                    value && setServicoAtualStatus(value);
+                                            }}
+                                            disabled={index !== (servicos.length - 1) || servico.status !== 2}
+                                        >
+                                            <Option value={3}>Sim</Option>
+                                            <Option value={4}>Não</Option>
+                                        </Select>
+                                    </FormControl>
+                                </Stack>
+                                {servico.status === 4 || (index === (servicos.length - 1) && servicoAtualStatus === 4) ?<><Divider/>
+                                <Stack direction="row" spacing={2}>
+                                    <FormControl sx={{ flexGrow: 1 }}>
+                                        <FormLabel>Motivo</FormLabel>
+                                        <Textarea
+                                            minRows={3}
+                                            maxRows={5} 
+                                            placeholder="Descreva de maneira sucinta o motivo da não solução do problema"
+                                            value={index === (servicos.length - 1) && servico.status !== 4 ? servicoAtualObservacao : servico.observacao}
+                                            onChange={(event) => {
+                                                if (index === (servicos.length - 1) && servicoAtualStatus === 4)
+                                                    setServicoAtualObservacao(event.target.value);
+                                            }}
+                                            disabled={index !== (servicos.length - 1) || servicoAtualStatus !== 4}
+                                        />
+                                    </FormControl>
+                                </Stack></> : null }
+                                { servico.status === 2 && usuario?.permissao === 'USR' ? 
+                                    <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+                                        <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
+                                            <Button size="sm" variant="solid" color="primary" onClick={() => handleAvaliar(servico.id)}>
+                                                Avaliar
+                                            </Button>
+                                        </CardActions>
+                                    </CardOverflow> : null}
+                            </Stack>}
+                        </Card>
+                    }
+                    <Card key={servico.id} sx={{ width: '100%' }}>
                         <Stack spacing={2}>
                             <Stack direction="row" spacing={2}>
                                 <FormControl sx={{ flexGrow: 1 }}>
@@ -130,11 +209,20 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </FormControl>
                             </Stack>
                         </Stack>
-                    </Card>                    
+                        { servico.status === 1 && servico.tecnico_id === usuario?.id ? 
+                            <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+                                <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
+                                    <Button size="sm" variant="solid" color="primary" onClick={() => handleFinalizar(servico.id)}>
+                                        Finalizar
+                                    </Button>
+                                </CardActions>
+                            </CardOverflow> : null
+                        }
+                    </Card></>                   
                 )) : null}
                 <Card sx={{ width: '100%' }}>
                     <Stack spacing={2}>
-                        {ordem ?
+                        {ordem && usuario?.permissao !== 'USR' ?
                         <><Stack direction="row" spacing={2}>
                             <FormControl sx={{ flexGrow: 1 }}>
                                 <FormLabel>Prioridade</FormLabel>

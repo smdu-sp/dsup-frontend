@@ -36,7 +36,7 @@ const baseURL = process.env.API_URL || 'http://localhost:3000/';
 
 async function criar(ordemDto: { ordem_id: string, tecnico_id?: string }): Promise<IServico> {
     const session = await getServerSession(authOptions);
-    const novaUnidade = await fetch(`${baseURL}servicos/criar`, {
+    const novoServico = await fetch(`${baseURL}servicos/criar`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -48,9 +48,46 @@ async function criar(ordemDto: { ordem_id: string, tecnico_id?: string }): Promi
         if (response.status !== 201) return;
         return response.json();
     });
-    return novaUnidade;
+    return novoServico;
+}
+
+async function finalizarServico(id: string): Promise<IServico> {
+    const session = await getServerSession(authOptions);
+    const servicoFinalizado = await fetch(`${baseURL}servicos/finalizar-servico/${id}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        },
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 200) return;
+        return response.json();
+    });
+    return servicoFinalizado;
+    
+}
+
+async function avaliarServico(id: string, status: number, observacao?: string): Promise<IServico> {
+    const session = await getServerSession(authOptions);
+    const servicoAvaliado = await fetch(`${baseURL}servicos/avaliar-servico/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+            body: JSON.stringify({ status, observacao })            
+        },
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 200) return;
+        return response.json();
+    });
+    return servicoAvaliado;
+    
 }
 
 export {
-    criar
+    criar,
+    finalizarServico,
+    avaliarServico
 };
