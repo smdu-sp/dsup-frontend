@@ -2,17 +2,18 @@
 
 import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
-import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormHelperText, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
-import { Add, Build, Clear, Edit, Refresh } from '@mui/icons-material';
+import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
+import { Build, Check, Clear, Edit, Refresh } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
 import { TablePagination } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
-import { IPaginadoUnidade, IUnidade } from '@/shared/services/unidade.services';
+import { IUnidade } from '@/shared/services/unidade.services';
 import { IOrdem, IPaginadoOrdem } from '@/shared/services/ordem.services';
 import * as ordemServices from '@/shared/services/ordem.services';
 import * as unidadeServices from '@/shared/services/unidade.services';
 import * as usuarioServices from '@/shared/services/usuario.services';
+import * as servicoServices from '@/shared/services/servico.services';
 import { IUsuario } from '@/shared/services/usuario.services';
 
 export default function Chamados(){
@@ -26,6 +27,7 @@ export default function Chamados(){
 function SearchChamados() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const { setAlert } = useContext(AlertsContext);
   const [ordens, setOrdens] = useState<IOrdem[]>([]);
   const [pagina, setPagina] = useState(searchParams.get('pagina') ? Number(searchParams.get('pagina')) : 1);
   const [limite, setLimite] = useState(searchParams.get('limite') ? Number(searchParams.get('limite')) : 10);
@@ -70,8 +72,6 @@ function SearchChamados() {
   ]
 
   const [confirma, setConfirma] = useState(confirmaVazio);
-
-  const theme = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -127,6 +127,15 @@ function SearchChamados() {
     setLimite(parseInt(event.target.value, 10));
     setPagina(1);
   };
+
+  function atribuirChamado(id: string, tecnico_id?: string){
+    console.log('chamou');
+    servicoServices.criar({ ordem_id: id, tecnico_id }).then(() => {
+      if (!tecnico_id) {
+        setAlert('Chamado atribuído!', 'Chamado atribuído com sucesso!', 'success', 3000, Check);
+      }
+    })
+  }
 
   const limpaFitros = () => {
     setStatus(1);
@@ -302,9 +311,9 @@ function SearchChamados() {
                 }} color={tipos[ordem.tipo].color}>{tipos[ordem.tipo].label}</Chip></td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    {['TEC', 'DEV'].includes(logado ? logado.permissao : '') ?
+                    {['TEC'].includes(logado ? logado.permissao : '') && ordem.status === 1 ?
                       <Tooltip title="Assumir Chamado" arrow placement="top">
-                        <IconButton size="sm" color="warning">
+                        <IconButton onClick={() => atribuirChamado(ordem.id)} size="sm" color="primary">
                           <Build />
                         </IconButton>
                       </Tooltip> : 

@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { IUnidade } from "./unidade.services";
 import { IUsuario } from "./usuario.services";
+import { IServico } from "./servico.services";
 
 async function Logout() {
     const router = useRouter();
@@ -26,6 +27,7 @@ export interface IOrdem {
     status: number;
     prioridade: number;
     observacoes: string;
+    servicos: IServico[];
 }
 
 export interface IPaginadoOrdem {
@@ -107,9 +109,26 @@ async function atualizar(id: string, ordemDto: { prioridade: number }): Promise<
     return unidadeAtualizada;
 }
 
+async function retornaPainel(): Promise<{ abertos: number, naoAtribuidos: number, concluidos: number }> {
+    const session = await getServerSession(authOptions);
+    const painel = await fetch(`${baseURL}ordens/painel`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        },
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 200) return;
+        return response.json();
+    });
+    return painel;
+}
+
 export {
     atualizar,
     buscarTudo,
     buscarPorId,
-    criar
+    criar,
+    retornaPainel
 };
