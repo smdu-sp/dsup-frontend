@@ -68,18 +68,15 @@ async function finalizarServico(id: string): Promise<IServico> {
     
 }
 
-async function avaliarServico(id: string, avaliarServicoDto: {status: number, observacao?: string} ): Promise<IServico> {
+async function avaliarServico(id: string, avaliarServicoDto: {status: string, observacao?: string} ): Promise<IServico> {
     const session = await getServerSession(authOptions);
-    console.log(avaliarServicoDto);
+    console.log(JSON.stringify(avaliarServicoDto));
     const servicoAvaliado = await fetch(`${baseURL}servicos/avaliar-servico/${id}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${session?.access_token}`,
-            body: JSON.stringify({
-                status: avaliarServicoDto.status,
-                observacao: avaliarServicoDto.observacao || ''
-            })
+            body: JSON.stringify(avaliarServicoDto)
         },
     }).then(async (response) => {
         if (response.status === 401) await Logout();
