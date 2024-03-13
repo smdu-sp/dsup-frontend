@@ -171,7 +171,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     { servicos ? servicos.map((servico: IServico, index: number) => (
                         <>
                         {servico.status === 1 ? null : 
-                            <TimelineItem>
+                            <TimelineItem key={index}>
                                 <TimelineOppositeContent>
                                     { servico.concluido_em ? 
                                         `${new Date(servico.concluido_em).toLocaleDateString('pt-BR')} - ${new Date(servico.concluido_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
@@ -234,7 +234,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </TimelineContent>
                             </TimelineItem>
                         }
-                        <TimelineItem>
+                        <TimelineItem key={servico.id}>
                             <TimelineOppositeContent color="textSecondary">
                                 { servico.data_inicio ? 
                                     `${new Date(servico.data_inicio).toLocaleDateString('pt-BR')} - ${new Date(servico.data_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
@@ -247,7 +247,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 <TimelineConnector />
                             </TimelineSeparator>
                             <TimelineContent>
-                                <Card key={servico.id} sx={{ width: '100%' }}>
+                                <Card sx={{ width: '100%' }}>
                                     <Stack spacing={2}>
                                         <Stack direction="row" spacing={2}>
                                             <FormControl sx={{ flexGrow: 1 }}>
@@ -276,7 +276,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                             </TimelineContent>
                         </TimelineItem>
                     </>)) : null}
-                    <TimelineItem>
+                    <TimelineItem key={ordem.id}>
                         <TimelineOppositeContent color="textSecondary">
                                 { ordem?.data_solicitacao ? 
                                     `${new Date(ordem?.data_solicitacao).toLocaleDateString('pt-BR')} - ${new Date(ordem?.data_solicitacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
