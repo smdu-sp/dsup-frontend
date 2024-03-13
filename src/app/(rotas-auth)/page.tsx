@@ -7,7 +7,7 @@ import { Suspense, useEffect, useState } from 'react';
 import * as ordemServices from '@/shared/services/ordem.services';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import { IUsuario } from '@/shared/services/usuario.services';
-import { Handyman } from '@mui/icons-material';
+import { Add, Handyman } from '@mui/icons-material';
 
 export default function Home() {
   return (
@@ -39,6 +39,10 @@ function SearchHome() {
     <Content
       titulo='Painel de Controle'
       pagina='/'
+      button={<Box sx={{ display: 'flex', gap: 1 }}>
+        <Button component='a' href='/chamados' startDecorator={<Handyman />}>Chamados</Button>
+        <Button component='a' color='success' href='/chamados/detalhes' startDecorator={<Add />}>Novo Chamado</Button>
+      </Box>}
     >
       <Box
         sx={{
@@ -67,7 +71,9 @@ function SearchHome() {
           </CardContent>
         </Card>
       </Box>
-      <Button component='a' href='/chamados' startDecorator={<Handyman />} sx={{ mx: 'auto'}}>Chamados</Button>
+      <Box sx={{ display: 'flex', gap: 1, mx: 'auto' }}>
+        
+      </Box>
     </Content>
   );
 }

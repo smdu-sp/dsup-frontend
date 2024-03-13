@@ -71,6 +71,14 @@ function SearchChamados() {
     { label: 'Urgente', color: 'danger' },
   ]
 
+  const statusChip: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
+    { label: '', color: 'neutral' },
+    { label: 'Aberto', color: 'neutral' },
+    { label: 'Em andamento', color: 'primary' },
+    { label: 'Aguardando avaliação', color: 'warning' },
+    { label: 'Concluído', color: 'success' },
+  ]
+
   const [confirma, setConfirma] = useState(confirmaVazio);
   const router = useRouter();
 
@@ -287,6 +295,7 @@ function SearchChamados() {
         <thead>
           <tr>
             <th>#</th>
+            <th>Status</th>
             <th>Data</th>
             <th>Solicitante</th>
             <th>Unidade</th>
@@ -299,6 +308,7 @@ function SearchChamados() {
             <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
               <tr key={ordem.id}>
                 <td><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? ordem.id : '-'}</Chip></td>
+                <td><Chip variant='solid' color={statusChip[ordem.status].color} title={statusChip[ordem.status].label}>{ordem.status ? statusChip[ordem.status].label : '-'}</Chip></td>
                 <td>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
                 <td>{ordem.solicitante ? ordem.solicitante.nome : '-'}</td>
                 <td>{ordem.unidade && <Chip onClick={() => {
