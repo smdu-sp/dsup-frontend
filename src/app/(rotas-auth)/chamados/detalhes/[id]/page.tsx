@@ -145,7 +145,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
             ]}
             titulo={id ? `Chamado #${id}` : 'Novo chamado'}
             tags={[
-                <Chip size="lg" color={statusChip[ordem?.status || 0].color} title={statusChip[ordem?.status || 0].label}>{statusChip[ordem?.status || 0].label}</Chip>,
+                <Chip key={ordem?.status || 0} size="lg" color={statusChip[ordem?.status || 0].color} title={statusChip[ordem?.status || 0].label}>{statusChip[ordem?.status || 0].label}</Chip>,
             ]}
             pagina="chamados"
         >
