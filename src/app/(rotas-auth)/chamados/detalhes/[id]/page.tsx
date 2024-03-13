@@ -276,7 +276,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                             </TimelineContent>
                         </TimelineItem>
                     </>)) : null}
-                    <TimelineItem key={ordem.id}>
+                    <TimelineItem key={ordem?.id}>
                         <TimelineOppositeContent color="textSecondary">
                                 { ordem?.data_solicitacao ? 
                                     `${new Date(ordem?.data_solicitacao).toLocaleDateString('pt-BR')} - ${new Date(ordem?.data_solicitacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
@@ -333,7 +333,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <Select
                                                 size="sm"
                                                 value={andar}
-                                                onChange={(_, value) => {
+                                                onChange={(_, value: number) => {
                                                     setAndar(value ? value : 8)
                                                     setAndarError('');
                                                 }}
@@ -360,7 +360,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                 type="text"
                                                 placeholder="Sala"
                                                 value={sala}
-                                                onChange={(event) => {
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                                     setSala(event.target.value && event.target.value)
                                                     setSalaError('');
                                                 }}
@@ -373,7 +373,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <Select
                                                 size="sm"
                                                 value={tipo}
-                                                onChange={(_, value) => {
+                                                onChange={(_: any, value: number) => {
                                                     setTipo(value ? value : 1)
                                                     setTipoError('');
                                                 }}
