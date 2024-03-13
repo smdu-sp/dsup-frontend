@@ -333,7 +333,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <Select
                                                 size="sm"
                                                 value={andar}
-                                                onChange={(_, value: number) => {
+                                                onChange={(_, value) => {
                                                     setAndar(value ? value : 8)
                                                     setAndarError('');
                                                 }}
@@ -360,7 +360,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                 type="text"
                                                 placeholder="Sala"
                                                 value={sala}
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                onChange={(event) => {
                                                     setSala(event.target.value && event.target.value)
                                                     setSalaError('');
                                                 }}
@@ -373,7 +373,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <Select
                                                 size="sm"
                                                 value={tipo}
-                                                onChange={(_: any, value: number) => {
+                                                onChange={(_, value) => {
                                                     setTipo(value ? value : 1)
                                                     setTipoError('');
                                                 }}
