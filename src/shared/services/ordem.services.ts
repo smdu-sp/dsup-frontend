@@ -28,6 +28,7 @@ export interface IOrdem {
     prioridade: number;
     observacoes: string;
     servicos: IServico[];
+    suspensaoAtiva?: boolean;
 }
 
 export interface IPaginadoOrdem {

@@ -32,14 +32,13 @@ function SearchChamados() {
   const [pagina, setPagina] = useState(searchParams.get('pagina') ? Number(searchParams.get('pagina')) : 1);
   const [limite, setLimite] = useState(searchParams.get('limite') ? Number(searchParams.get('limite')) : 10);
   const [total, setTotal] = useState(searchParams.get('total') ? Number(searchParams.get('total')) : 1);
-  const [status, setStatus] = useState<number>(searchParams.get('status') ? Number(searchParams.get('status')) : 1);
+  const [status, setStatus] = useState<number>(searchParams.get('status') ? Number(searchParams.get('status')) : 0);
   const [unidade_id, setUnidade_id] = useState(searchParams.get('unidade_id') || '');
   const [solicitante_id, setSolicitante_id] = useState(searchParams.get('solicitante_id') || '');
   const [unidades, setUnidades] = useState<IUnidade[]>([]);
   const [usuarios, setUsuarios] = useState<IUsuario[]>([]);
   const [logado, setLogado] = useState<IUsuario>();
   const [tipo, setTipo] = useState(searchParams.get('tipo') ? Number(searchParams.get('tipo')) : 0);
-  const [statusError, setStatusError] = useState('');
 
   const confirmaVazio: {
     aberto: boolean,
@@ -247,11 +246,12 @@ function SearchChamados() {
                 <Option value={4}>Outros</Option>
             </Select>
         </FormControl>
-        <FormControl sx={{ flex: 1 }} size="sm">
+        {!logado || logado?.permissao === 'USR' ? null : (<>
+          <FormControl sx={{ flex: 1 }} size="sm">
           <FormLabel>Unidade: </FormLabel>
           <Autocomplete
               options={unidades}
-              getOptionLabel={(option) => option && `${option.nome} (${option.sigla})`}
+              getOptionLabel={(option) => option && `${option.sigla}`}
               placeholder="Unidade"
               value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
               onChange={(_, value) => {
@@ -272,7 +272,7 @@ function SearchChamados() {
           <FormLabel>Solicitante: </FormLabel>
           <Autocomplete
               options={usuarios}
-              getOptionLabel={(option) => option && `${option.nome} ${option.unidade && `(${option.unidade.sigla})`}`}
+              getOptionLabel={(option) => option && `${option.sigla}`}
               placeholder="Solicitante"
               value={solicitante_id && usuarios.find((usuario: IUsuario) => usuario.id === solicitante_id)}
               onChange={(_, value) => {
@@ -289,7 +289,7 @@ function SearchChamados() {
               }}
               noOptionsText="Nenhuma unidade encontrada"
           />
-        </FormControl>
+        </FormControl></>)}
       </Box>
       <Table hoverRow sx={{ tableLayout: 'auto' }}>
         <thead>
@@ -337,7 +337,7 @@ function SearchChamados() {
                 </td>
               </tr>
             </Tooltip>
-          )) : <tr><td colSpan={6}>Nenhuma chamado entontrado</td></tr>}
+          )) : <tr><td colSpan={7}>Nenhuma chamado encontrado</td></tr>}
         </tbody>
       </Table>
       {(total && total > 0) ? <TablePagination

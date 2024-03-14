@@ -16,13 +16,31 @@ async function Logout() {
 export interface IServico {
     id: string;
     ordem_id: string;
+    descricao?: string;
     ordem?: IOrdem;
     tecnico_id: string;
     tecnico?: IUsuario;
+    suspensoes?: ISuspensao[];
+    materiais?: IMaterial[];
     data_inicio: Date;
-    concluido_em?: Date;
+    data_fim?: Date;
+    avaliado_em?: Date;
     status: number;
     observacao?: string;
+}
+
+export interface IMaterial {
+    id: string;
+}
+
+export interface ISuspensao {
+    id: string;
+    motivo: string;
+    inicio: Date;
+    termino: Date;
+    servico_id: string;
+    servico?: IServico;
+    status: boolean;
 }
 
 export interface IPaginadoServico {
@@ -82,12 +100,64 @@ async function avaliarServico(id: string, avaliarServicoDto: {status: number, ob
         if (response.status !== 200) return;
         return response.json();
     });
-    return servicoAvaliado;
-    
+    return servicoAvaliado; 
+}
+
+async function atualizar(id: string, updateServicoDto: { descricao: string } ): Promise<IServico> {
+    const session = await getServerSession(authOptions);
+    const servicoAtualizado = await fetch(`${baseURL}servicos/atualizar/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(updateServicoDto)
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 200) return;
+        return response.json();
+    });
+    return servicoAtualizado; 
+}
+
+async function adicionarSuspensao(id: string, adicionarSuspensaoDto: { motivo: string }): Promise<ISuspensao> {
+    const session = await getServerSession(authOptions);
+    const suspensao = await fetch(`${baseURL}servicos/adicionar-suspensao/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(adicionarSuspensaoDto)
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 200) return;
+        return response.json();
+    });
+    return suspensao; 
+}
+
+async function retomarServico(id: string): Promise<ISuspensao> {
+    const session = await getServerSession(authOptions);
+    const suspensao = await fetch(`${baseURL}servicos/retomar-servico/${id}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+        }
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 200) return;
+        return response.json();
+    });
+    return suspensao; 
 }
 
 export {
+    atualizar,
+    adicionarSuspensao,
     criar,
     finalizarServico,
-    avaliarServico
+    avaliarServico,
+    retomarServico
 };

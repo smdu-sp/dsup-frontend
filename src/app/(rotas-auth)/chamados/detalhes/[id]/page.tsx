@@ -1,8 +1,8 @@
 'use client'
 
 import Content from "@/components/Content";
-import { Abc, Business, Check, Close, Handyman, PlayArrow, Timer } from "@mui/icons-material";
-import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, FormHelperText, ColorPaletteProp } from "@mui/joy";
+import { Abc, Add, Business, Check, Close, Handyman, Pause, PlayArrow, Timer } from "@mui/icons-material";
+import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent } from "@mui/joy";
 import { useRouter } from "next/navigation";
 import { use, useContext, useEffect, useState } from "react";
 import * as servicoServices from "@/shared/services/servico.services";
@@ -12,9 +12,9 @@ import * as usuarioServices from "@/shared/services/usuario.services";
 import { IOrdem } from "@/shared/services/ordem.services";
 import { IUnidade } from "@/shared/services/unidade.services";
 import { AlertsContext } from "@/providers/alertsProvider";
-import { IServico } from "@/shared/services/servico.services";
+import { IServico, ISuspensao } from "@/shared/services/servico.services";
 import { IUsuario } from "@/shared/services/usuario.services";
-import { ChipPropsColorOverrides, Typography } from "@mui/material";
+import { ChipPropsColorOverrides, Modal } from "@mui/material";
 import Timeline from "@mui/lab/Timeline";
 import { OverridableStringUnion } from '@mui/types';
 import { TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@mui/lab";
@@ -41,6 +41,12 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [usuario, setUsuario] = useState<IUsuario>();
     const [servicoAtualStatus, setServicoAtualStatus] = useState(1);
     const [servicoAtualObservacao, setServicoAtualObservacao] = useState('');
+    const [servicoAtualDescricao, setServicoAtualDescricao] = useState('');
+    const [servicoAtualSalvar, setServicoAtualSalvar] = useState(true);
+    const [adicionaMaterialModal, setAdicionaMaterialModal] = useState(false);
+    const [adicionaSuspensaoModal, setAdicionaSuspensaoModal] = useState(false);
+    const [motivoSuspensao, setMotivoSuspensao] = useState('');
+    const [servicoSuspensao, setServicoSuspensao] = useState('');
 
     const statusChip: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
       { label: '', color: 'neutral' },
@@ -84,11 +90,41 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
         })
     }
 
+    function handleAtualizar(servico_id: string) {
+        servicoServices.atualizar(servico_id, { descricao: servicoAtualDescricao }).then((response: IServico) => {
+            if (response.descricao === servicoAtualDescricao) {
+                setAlert('Descrição de serviço atualizada com sucesso!', 'Sucesso', 'success', 3000, Check);
+                atualizaDados();
+            }
+        })
+    }
+
     function handleAvaliar(servico_id: string) {
-        console.log({ servico_id, servicoAtualStatus, servicoAtualObservacao });
         servicoServices.avaliarServico(servico_id, { status: servicoAtualStatus, observacao: servicoAtualObservacao}).then((response: IServico) => {
             if (response.status === servicoAtualStatus) {
                 setAlert('Ordem avaliada com sucesso!', 'Sucesso', 'success', 3000, Check);
+                atualizaDados();
+            }
+        })
+    }
+
+    function handleSuspensao() {
+        // alert(motivoSuspensao + ' - ' + servicoSuspensao);
+        servicoServices.adicionarSuspensao(servicoSuspensao, { motivo: motivoSuspensao}).then((response: ISuspensao) => {
+            if (response.motivo === motivoSuspensao) {
+                setMotivoSuspensao('');
+                setServicoSuspensao('');
+                setAdicionaSuspensaoModal(false);
+                setAlert('Serviço suspenso!', 'Sucesso', 'warning', 3000, Check);
+                atualizaDados();
+            }
+        })
+    }
+
+    function handleRetomar(servico_id: string) {
+        servicoServices.retomarServico(servico_id).then((response: ISuspensao) => {
+            if (response.status === false) {
+                setAlert('Serviço retomado!', 'Sucesso', 'success', 3000, Check);
                 atualizaDados();
             }
         })
@@ -137,16 +173,56 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
             })
         }
     }
-    return (
+    return (<>
+        <Modal open={adicionaMaterialModal} onClose={() => setAdicionaMaterialModal(false)}>
+            <ModalDialog>
+                <DialogTitle>Adicionar material utilizado</DialogTitle>
+                <Stack spacing={2}>
+                    <FormControl>
+                        <FormLabel>Name</FormLabel>
+                        <Input autoFocus required />
+                    </FormControl>
+                    <FormControl>
+                        <FormLabel>Description</FormLabel>
+                        <Input required />
+                    </FormControl>
+                    <Button>Submit</Button>
+                </Stack>
+            </ModalDialog>
+        </Modal>
+        <Modal open={adicionaSuspensaoModal} onClose={() => {
+            setAdicionaSuspensaoModal(false);
+            setMotivoSuspensao('');
+        }}>
+            <ModalDialog>
+                <DialogTitle>Pausar serviço</DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2}>
+                        <FormControl>
+                            <FormLabel>Motivo da Paralização</FormLabel>
+                            <Textarea
+                                value={motivoSuspensao}
+                                onChange={(event) => setMotivoSuspensao(event.target.value)}
+                                minRows={4}
+                                maxRows={4}
+                                required
+                                autoFocus
+                            />
+                        </FormControl>
+                    </Stack>
+                </DialogContent>
+                <Button color="warning" disabled={!motivoSuspensao} onClick={handleSuspensao}>Pausar</Button>
+            </ModalDialog>
+        </Modal>
         <Content
             breadcrumbs={[
                 { label: 'Chamados', href: '/chamados' },
                 { label: id ? `${id}` : 'Novo chamado', href: `/chamados/detalhes/${id ? id : '' }` || '' },
             ]}
             titulo={id ? `Chamado #${id}` : 'Novo chamado'}
-            tags={[
+            tags={id ? [
                 <Chip key={ordem?.status || 0} size="lg" color={statusChip[ordem?.status || 0].color} title={statusChip[ordem?.status || 0].label}>{statusChip[ordem?.status || 0].label}</Chip>,
-            ]}
+            ] : []}
             pagina="chamados"
         >
             <Box
@@ -170,11 +246,11 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                 >
                     { servicos ? servicos.map((servico: IServico, index: number) => (
                         <>
-                        {servico.status === 1 ? null : 
+                        {servico.status === 1 || servico.status === 5 ? null : 
                             <TimelineItem key={index}>
                                 <TimelineOppositeContent>
-                                    { servico.concluido_em ? 
-                                        `${new Date(servico.concluido_em).toLocaleDateString('pt-BR')} - ${new Date(servico.concluido_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
+                                    { servico.avaliado_em ? 
+                                        `${new Date(servico.avaliado_em).toLocaleDateString('pt-BR')} - ${new Date(servico.avaliado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
                                     : '' }
                                 </TimelineOppositeContent>
                                 <TimelineSeparator>
@@ -186,7 +262,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </TimelineSeparator>
                                 <TimelineContent sx={{ flexGrow: 1 }}>
                                     <Card>
-                                        {(servico.status === 2 && usuario?.permissao !== 'USR') || (servico.status < 2) ? <Typography>Aguardando avaliação</Typography> :
+                                        {(servico.status === 2 && usuario?.permissao !== 'USR') || (servico.status < 2) ? <Typography level='title-md'>Aguardando avaliação</Typography> :
                                         <Stack spacing={2}>
                                             <Stack direction="row" spacing={2}>
                                                 <FormControl sx={{ flexGrow: 1 }}>
@@ -234,8 +310,67 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </TimelineContent>
                             </TimelineItem>
                         }
+                        { servico.status !== 1 && servico.status !== 5 ? 
+                            <TimelineItem key={index}>
+                                <TimelineOppositeContent>
+                                    { servico.data_fim ? 
+                                        `${new Date(servico.data_fim).toLocaleDateString('pt-BR')} - ${new Date(servico.data_fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
+                                    : '' }
+                                </TimelineOppositeContent>
+                                <TimelineSeparator>
+                                    <TimelineDot color='success' sx={{ p: 0}}>
+                                        <Check sx={{ fontSize: 10 }} />
+                                    </TimelineDot>
+                                    <TimelineConnector />
+                                </TimelineSeparator>
+                                <TimelineContent sx={{ flexGrow: 1 }}>
+                                    <Card sx={{ width: '100%' }}>
+                                        <Typography level="title-md">Serviço realizado pelo técnico</Typography>
+                                    </Card>
+                                </TimelineContent>
+                            </TimelineItem>
+                        : null}
+                        {!servico.suspensoes ? null :
+                            servico.suspensoes.map((suspensao: ISuspensao, index: number) => (<>
+                                {suspensao.status ? null : 
+                                    <TimelineItem key={servico.id + 'fim'}>
+                                        <TimelineOppositeContent>
+                                            {new Date(suspensao.termino).toLocaleDateString('pt-BR')} - {new Date(suspensao.termino).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        </TimelineOppositeContent>
+                                        <TimelineSeparator>
+                                            <TimelineDot color='success' sx={{ p: 0}}>
+                                                <PlayArrow sx={{ fontSize: 10 }} />
+                                            </TimelineDot>
+                                            <TimelineConnector />
+                                        </TimelineSeparator>
+                                        <TimelineContent>
+                                            <Card sx={{ width: '100%' }}>
+                                                <Typography level="title-md">Suspensão encerrada</Typography>
+                                            </Card>
+                                        </TimelineContent>
+                                    </TimelineItem>
+                                }
+                                <TimelineItem key={servico.id + 'fim'}>
+                                    <TimelineOppositeContent>
+                                        {new Date(suspensao.inicio).toLocaleDateString('pt-BR')} - {new Date(suspensao.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    </TimelineOppositeContent>
+                                    <TimelineSeparator>
+                                        <TimelineDot color='warning' sx={{ p: 0}}>
+                                            <Pause sx={{ fontSize: 10 }} />
+                                        </TimelineDot>
+                                        <TimelineConnector />
+                                    </TimelineSeparator>
+                                    <TimelineContent>
+                                        <Card sx={{ width: '100%' }}>
+                                            <Typography level="title-md">Início de suspensão</Typography>
+                                            <Typography level="body-sm">{suspensao.motivo}</Typography>
+                                        </Card>
+                                    </TimelineContent>
+                                </TimelineItem>
+                            </>))
+                        }
                         <TimelineItem key={servico.id}>
-                            <TimelineOppositeContent color="textSecondary">
+                            <TimelineOppositeContent>
                                 { servico.data_inicio ? 
                                     `${new Date(servico.data_inicio).toLocaleDateString('pt-BR')} - ${new Date(servico.data_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
                                 : '' }
@@ -255,17 +390,58 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                 <Input value={servico.tecnico?.nome} disabled />
                                             </FormControl>
                                         </Stack>
-                                        <Divider/>
+                                        { servico.descricao || servico.status === 1 ? <><Divider/>
                                         <Stack direction="row" spacing={2}>
                                             <FormControl sx={{ flexGrow: 1 }}>
-                                                <FormLabel>Data de início</FormLabel>
-                                                <Input value={`${new Date(servico.data_inicio).toLocaleDateString('pt-BR')} - ${new Date(servico.data_inicio).toLocaleTimeString('pt-BR')}`} disabled />
+                                                <FormLabel>Descrição</FormLabel>
+                                                <Textarea
+                                                    minRows={3}
+                                                    maxRows={3}
+                                                    value={
+                                                        index === 0 ? 
+                                                            (!servicoAtualDescricao && servicoAtualSalvar ? servico.descricao : servicoAtualDescricao)
+                                                        : 
+                                                            servico.descricao
+                                                    }
+                                                    onChange={(event) => {
+                                                        if (index === 0)
+                                                            setServicoAtualDescricao(event.target.value);
+                                                            setServicoAtualSalvar(event.target.value === servico.descricao);
+                                                    }}
+                                                    disabled={servico.status > 1 || !['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '')}
+                                                />
                                             </FormControl>
-                                        </Stack>
+                                        </Stack></> : null }
                                     </Stack>
+                                    {(servico.status === 1 || servico.status === 5) && ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '') ?
+                                    <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
+                                        <Stack spacing={2}>
+                                            {index === 0 ? <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                                                {ordem?.suspensaoAtiva ?
+                                                    <Button size="sm" variant="solid" color="success" startDecorator={<PlayArrow />} onClick={() => handleRetomar(servico.id)}>
+                                                        Retomar serviço
+                                                    </Button>                                                    
+                                                : <>
+                                                    <Button size="sm" variant="solid" color="primary" startDecorator={<Add />} onClick={() => setAdicionaMaterialModal(true)}>
+                                                        Adicionar material
+                                                    </Button>
+                                                    <Button size="sm" variant="solid" color="warning" startDecorator={<Pause />} onClick={() => {
+                                                        setAdicionaSuspensaoModal(true);
+                                                        setMotivoSuspensao('');
+                                                        setServicoSuspensao(servico.id);
+                                                    }}>
+                                                        Pausar serviço
+                                                    </Button>
+                                                </>}
+                                            </Box> : null}
+                                        </Stack>
+                                    </CardOverflow> : null}
                                     { servico.status === 1 && servico.tecnico_id === usuario?.id ? 
                                         <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
                                             <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
+                                                <Button disabled={servicoAtualSalvar} size="sm" variant="solid" color="success" onClick={() => handleAtualizar(servico.id)}>
+                                                    Salvar
+                                                </Button>
                                                 <Button size="sm" variant="solid" color="primary" onClick={() => handleFinalizar(servico.id)}>
                                                     Finalizar
                                                 </Button>
@@ -277,7 +453,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                         </TimelineItem>
                     </>)) : null}
                     <TimelineItem key={ordem?.id}>
-                        <TimelineOppositeContent color="textSecondary">
+                        <TimelineOppositeContent>
                                 { ordem?.data_solicitacao ? 
                                     `${new Date(ordem?.data_solicitacao).toLocaleDateString('pt-BR')} - ${new Date(ordem?.data_solicitacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
                                 : 'Chamado novo' }
@@ -295,7 +471,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                     <><Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
                                             <FormLabel>Prioridade</FormLabel>
-                                            <Select value={prioridade} onChange={(_, value) => setPrioridade(Number(value))}>
+                                            <Select value={prioridade} onChange={(_, value) => setPrioridade(Number(value))} disabled={ordem.status > 2}>
                                                 <Option value={1}>Baixa</Option>
                                                 <Option value={2}>Media</Option>
                                                 <Option value={3}>Alta</Option>
@@ -303,14 +479,22 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             </Select>
                                         </FormControl>
                                     </Stack><Divider/></> : null}
+                                    {ordem && ordem.solicitante ? <>
+                                        <Stack direction="row" spacing={2}>
+                                            <FormControl sx={{ flexGrow: 1 }}>
+                                                <FormLabel>Solicitante</FormLabel>
+                                                <Input value={ordem.solicitante.nome} disabled />
+                                            </FormControl>
+                                        </Stack>
+                                        <Divider/>
+                                    </> : null}
                                     <Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
                                             <FormLabel>Unidade</FormLabel>
-                                            <Autocomplete
+                                            {!ordem ? <Autocomplete
                                                 autoFocus
                                                 options={unidades}
-                                                getOptionLabel={(option) => option && `${option.nome} (${option.sigla})`}
-                                                placeholder="Unidade"
+                                                getOptionLabel={(option) => option && `${option.sigla}`}
                                                 value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
                                                 onChange={(_, value) => {
                                                     value  && setUnidade_id(value?.id);
@@ -324,8 +508,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                     return [];
                                                 }}
                                                 noOptionsText="Nenhuma unidade encontrada"
-                                                disabled={id ? true : false}
-                                            />
+                                            /> : <Input value={ordem && ordem.unidade ? ordem.unidade.sigla : ""} disabled />}
                                             <FormHelperText sx={{ color: 'danger.500' }}>{unidade_idError}</FormHelperText>
                                         </FormControl>
                                         <FormControl>
@@ -407,21 +590,23 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                         </FormControl>
                                     </Stack>
                                 </Stack>
+                                {!ordem || ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '') ? 
                                 <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
                                     <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
-                                    <Button size="sm" variant="outlined" color="neutral" onClick={() => router.back()}>
+                                    {!ordem ? <Button size="sm" variant="outlined" color="neutral" onClick={() => router.back()}>
                                         Cancelar
-                                    </Button>
-                                    <Button size="sm" variant="solid" color="primary" onClick={handleSubmit}>
-                                        Salvar
-                                    </Button>
+                                    </Button> : null }
+                                    
+                                        <Button size="sm" variant="solid" color="primary" onClick={handleSubmit}>
+                                            Salvar
+                                        </Button>
                                     </CardActions>
-                                </CardOverflow>
+                                </CardOverflow> : null}
                             </Card>
                         </TimelineContent>
                     </TimelineItem>
                 </Timeline>
             </Box>            
         </Content>
-    );
+    </>);
 }

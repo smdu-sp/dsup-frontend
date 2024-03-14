@@ -242,7 +242,7 @@ function SearchUsuarios() {
           <FormLabel>Unidade: </FormLabel>
           <Autocomplete
               options={unidades}
-              getOptionLabel={(option) => option && `${option.nome} (${option.sigla})`}
+              getOptionLabel={(option) => option && `${option.sigla}`}
               placeholder="Unidade"
               value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
               onChange={(_, value) => {
