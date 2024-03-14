@@ -272,7 +272,7 @@ function SearchChamados() {
           <FormLabel>Solicitante: </FormLabel>
           <Autocomplete
               options={usuarios}
-              getOptionLabel={(option) => option && `${option.sigla}`}
+              getOptionLabel={(option) => option && `${option.nome}`}
               placeholder="Solicitante"
               value={solicitante_id && usuarios.find((usuario: IUsuario) => usuario.id === solicitante_id)}
               onChange={(_, value) => {
