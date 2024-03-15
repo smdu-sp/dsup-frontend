@@ -35,7 +35,7 @@ function SearchHome() {
     })
   }, [])
 
-  return (
+  return permissao === 'USR' ? null : (
     <Content
       titulo='Painel de Controle'
       pagina='/'

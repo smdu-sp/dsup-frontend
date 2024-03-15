@@ -8,19 +8,22 @@ export interface IMenuOption {
 };
 
 export interface IMenu {
+    tecOptions:    IMenuOption[];
     userOptions:    IMenuOption[];
     adminOptions:   IMenuOption[];
 }
 
 
 export const menu: IMenu = {
-    userOptions: [
+    tecOptions: [
         {
             title: 'Página Inicial',
             href: '/',
             name: '/',
             icon: Home,
         },
+    ],
+    userOptions: [
         {
             title: 'Chamados',
             href: '/chamados',
