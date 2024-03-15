@@ -2,7 +2,7 @@
 
 import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
-import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
+import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, DialogTitle, FormControl, FormLabel, IconButton, Modal, ModalDialog, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
 import { Build, Check, Clear, Edit, Refresh } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
@@ -15,6 +15,7 @@ import * as unidadeServices from '@/shared/services/unidade.services';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import * as servicoServices from '@/shared/services/servico.services';
 import { IUsuario } from '@/shared/services/usuario.services';
+import { IServico } from '@/shared/services/servico.services';
 
 export default function Chamados(){
   return (
@@ -34,11 +35,17 @@ function SearchChamados() {
   const [total, setTotal] = useState(searchParams.get('total') ? Number(searchParams.get('total')) : 1);
   const [status, setStatus] = useState<number>(searchParams.get('status') ? Number(searchParams.get('status')) : 0);
   const [unidade_id, setUnidade_id] = useState(searchParams.get('unidade_id') || '');
+  const [criado, setCriado] = useState(searchParams.get('criado') || '');
   const [solicitante_id, setSolicitante_id] = useState(searchParams.get('solicitante_id') || '');
   const [unidades, setUnidades] = useState<IUnidade[]>([]);
   const [usuarios, setUsuarios] = useState<IUsuario[]>([]);
   const [logado, setLogado] = useState<IUsuario>();
+  const [atribuirChamadoModal, setAtribuirChamadoModal] = useState(false);
   const [tipo, setTipo] = useState(searchParams.get('tipo') ? Number(searchParams.get('tipo')) : 0);
+  const [ordem_id, setOrdem_id] = useState('');
+  const [tecnico_id, setTecnico_id] = useState('');
+  const [prioridade, setPrioridade] = useState(1);
+  const [tecnicos, setTecnicos] = useState<IUsuario[]>([]);
 
   const confirmaVazio: {
     aberto: boolean,
@@ -81,7 +88,15 @@ function SearchChamados() {
   const [confirma, setConfirma] = useState(confirmaVazio);
   const router = useRouter();
 
-  useEffect(() => {
+  function atualizaDados() {
+    if (criado === '1') {
+      setAlert('Chamado criado com sucesso!', 'Sucesso', 'success', 3000, Check);
+      router.push(pathname);
+    }
+    if (criado === '2') {
+      setAlert('Chamado alterado com sucesso!', 'Sucesso', 'success', 3000, Check);
+      router.push(pathname);
+    }
     unidadeServices.listaCompleta()
         .then((response: IUnidade[]) => {
             setUnidades(response);
@@ -89,11 +104,16 @@ function SearchChamados() {
     usuarioServices.listaCompleta()
         .then((response: IUsuario[]) => {
             setUsuarios(response);
+            setTecnicos(response.filter((usuario: IUsuario) => usuario.permissao === 'TEC'));
         })
     usuarioServices.validaUsuario()
         .then((response: IUsuario) => {
             setLogado(response);
         })
+  }
+
+  useEffect(() => {
+    atualizaDados();
   }, [])
 
   useEffect(() => {
@@ -135,11 +155,13 @@ function SearchChamados() {
     setPagina(1);
   };
 
-  function atribuirChamado(id: string, tecnico_id?: string){
-    console.log('chamou');
-    servicoServices.criar({ ordem_id: id, tecnico_id }).then(() => {
-      if (!tecnico_id) {
+  function atribuirChamado(){
+    servicoServices.criar({ ordem_id, prioridade, tecnico_id }).then((response: IServico) => {
+      if (response.id) {
         setAlert('Chamado atribuído!', 'Chamado atribuído com sucesso!', 'success', 3000, Check);
+        setAtribuirChamadoModal(false);
+        atualizaDados();
+        buscaOrdens();
       }
     })
   }
@@ -155,7 +177,40 @@ function SearchChamados() {
     buscaOrdens();
   }
 
-  return (
+  return (<>
+    <Modal open={atribuirChamadoModal} sx={{ zIndex: 99 }} onClose={() => {
+      setAtribuirChamadoModal(false);
+      setTecnico_id('');
+      setPrioridade(1);
+      setOrdem_id('');
+    }}>
+        <ModalDialog>
+            <DialogTitle>Iniciar chamado</DialogTitle>
+            <Stack spacing={2}>
+                {['DEV', 'ADM'].includes(logado?.permissao || '') ? (
+                <FormControl>
+                    <FormLabel>Técnico</FormLabel>
+                    <Select value={tecnico_id} onChange={(_, value) => setTecnico_id(value || '')}>
+                      {tecnicos.map((tecnico) => (
+                        <Option key={tecnico.id} value={tecnico.id}>{tecnico.nome}</Option>
+                      ))}
+                    </Select>
+                </FormControl>) : null}
+                <FormControl>
+                    <FormLabel>Prioridade</FormLabel>
+                    <Select value={prioridade} onChange={(_, value) => setPrioridade(Number(value))}>
+                        <Option value={1}>Baixa</Option>
+                        <Option value={2}>Media</Option>
+                        <Option value={3}>Alta</Option>
+                        <Option value={4}>Urgente</Option>
+                    </Select>
+                </FormControl>
+                <Button color="success" onClick={() => atribuirChamado()}>
+                  {['DEV', 'ADM'].includes(logado?.permissao || '') ? 'Atribuir' : 'Assumir'} chamado
+                </Button>
+            </Stack>
+        </ModalDialog>
+    </Modal>
     <Content
       breadcrumbs={[
         { label: 'Chamados', href: '/chamados' }
@@ -321,15 +376,19 @@ function SearchChamados() {
                 }} color={tipos[ordem.tipo].color}>{tipos[ordem.tipo].label}</Chip></td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    {['TEC'].includes(logado ? logado.permissao : '') && ordem.status === 1 ?
+                    {['DEV', 'ADM', 'TEC'].includes(logado ? logado.permissao : '') && ordem.status === 1 ?
                       <Tooltip title="Assumir Chamado" arrow placement="top">
-                        <IconButton onClick={() => atribuirChamado(ordem.id)} size="sm" color="primary">
+                        <IconButton onClick={() => {
+                          setOrdem_id(ordem.id);
+                          setPrioridade(ordem.prioridade);
+                          setAtribuirChamadoModal(true);
+                        }} size="sm" color="primary">
                           <Build />
                         </IconButton>
                       </Tooltip> : 
                     null}
                     <Tooltip title="Detalhes" arrow placement="top">
-                      <IconButton component="a" href={`/chamados/detalhes/${ordem.id}`} size="sm" color="warning">
+                      <IconButton component="a" href={`/chamados/detalhes/${ordem.id.replace('/', '-')}`} size="sm" color="warning">
                         <Edit />
                       </IconButton>
                     </Tooltip>
@@ -352,5 +411,5 @@ function SearchChamados() {
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
       /> : null}
     </Content>
-  );
+  </>);
 }

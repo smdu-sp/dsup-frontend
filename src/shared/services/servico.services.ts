@@ -56,7 +56,7 @@ export interface IPaginadoServico {
 
 const baseURL = process.env.API_URL || 'http://localhost:3000/';
 
-async function criar(ordemDto: { ordem_id: string, tecnico_id?: string }): Promise<IServico> {
+async function criar(servicoDto: { ordem_id: string, prioridade: number, tecnico_id?: string }): Promise<IServico> {
     const session = await getServerSession(authOptions);
     const novoServico = await fetch(`${baseURL}servicos/criar`, {
         method: "POST",
@@ -64,7 +64,7 @@ async function criar(ordemDto: { ordem_id: string, tecnico_id?: string }): Promi
             "Content-Type": "application/json",
             "Authorization": `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify(ordemDto)
+        body: JSON.stringify(servicoDto)
     }).then(async (response) => {
         if (response.status === 401) await Logout();
         if (response.status !== 201) return;

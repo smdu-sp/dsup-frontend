@@ -103,8 +103,8 @@ function SearchUsuarios() {
   }
   
   const desativaUsuario = async (id: string) => {
-    var resposta = await usuarioServices.desativar(id);
-    if (resposta){
+    var resposta: { desativado: boolean } = await usuarioServices.desativar(id);
+    if (resposta.desativado){
       setAlert('Usuário desativado!', 'Esse usuário foi desativado e não poderá acessar o sistema.', 'success', 3000, Check);
       buscaUsuarios();
     } else {
@@ -311,23 +311,22 @@ function SearchUsuarios() {
               </td>
               <td>
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                  {usuario.status !== 1 && (
-                    <Tooltip title="Aprovar usuário novo" arrow placement="top">
-                      <IconButton size="sm" color="success" onClick={() => confirmaAutorizaUsuario(usuario.id)}>
-                        <Check />
-                      </IconButton>
-                    </Tooltip>                    
-                  )}
                   <Tooltip title="Detalhes" arrow placement="top">
                     <IconButton component="a" href={`/usuarios/detalhes/${usuario.id}`} size="sm" color="warning">
                       <Edit />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Desativar" arrow placement="top">
+                  {usuario.status !== 1 ? (
+                    <Tooltip title="Aprovar usuário novo" arrow placement="top">
+                      <IconButton size="sm" color="success" onClick={() => confirmaAutorizaUsuario(usuario.id)}>
+                        <Check />
+                      </IconButton>
+                    </Tooltip>                    
+                  ) : (<Tooltip title="Desativar" arrow placement="top">
                     <IconButton title="Desativar" size="sm" color="danger" onClick={() => confirmaDesativaUsuario(usuario.id)}>
                       <Cancel />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip>)}
                 </div>
               </td>
             </tr>

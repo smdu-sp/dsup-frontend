@@ -137,7 +137,7 @@ async function atualizar(id: string, data: IUpdateUsuario): Promise<IUsuario> {
     return autorizado;
 }
 
-async function desativar(id: string): Promise<{ autorizado: boolean }> {
+async function desativar(id: string): Promise<{ desativado: boolean }> {
     const session = await getServerSession(authOptions);
     const desativado = await fetch(`${baseURL}usuarios/desativar/${id}`, {
         method: "DELETE",
@@ -196,5 +196,5 @@ export {
     criar,
     desativar,
     listaCompleta,
-    validaUsuario
+    validaUsuario,
 };

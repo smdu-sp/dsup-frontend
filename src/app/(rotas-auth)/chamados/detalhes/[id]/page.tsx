@@ -186,14 +186,14 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     observacoes
                 }).then((ordem: IOrdem) => {
                     setAlert('Chamado criado com sucesso!', 'Sucesso', 'success', 3000, Check);
-                    if (ordem) router.push('/chamados/detalhes/' + ordem.id);
+                    if (ordem) router.push('/chamados?criado=1');
                 })
         } else {
             ordemServices.atualizar(id, {
                 prioridade
             }).then((ordem: IOrdem) => {
                 setAlert('Chamado alterado com sucesso!', 'Sucesso', 'success', 3000, Check);
-                if (ordem) router.push('/chamados/detalhes/' + ordem.id);
+                if (ordem) router.push('/chamados?criado=2');
             })
         }
     }
@@ -359,7 +359,8 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </TimelineSeparator>
                                 <TimelineContent sx={{ flexGrow: 1 }}>
                                     <Card sx={{ width: '100%' }}>
-                                        <Typography level="title-md">Serviço realizado pelo técnico</Typography>
+                                        <Typography level="title-md">Serviço concluído.</Typography>
+                                        {servico.tecnico ? <Typography level="body-sm">{servico.tecnico.nome || ''}</Typography> : null }
                                     </Card>
                                 </TimelineContent>
                             </TimelineItem>
