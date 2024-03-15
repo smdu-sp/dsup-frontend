@@ -452,7 +452,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <Stack spacing={2}>
                                                 <List>
                                                     {servico.materiais.map((material: IMaterial, index: number) => (
-                                                        <ListItem
+                                                        <ListItem key={material.id}
                                                             endAction={
                                                                 (servico.status === 1 || servico.status === 5) && ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '') &&
                                                                 <IconButton aria-label="Remover" size="sm" color="danger" variant="soft" onClick={() => {
