@@ -174,6 +174,22 @@ async function adicionarMaterial(servico_id: string, adicionarMaterialDto: { nom
     return novoMaterial;
 }
 
+async function removerMaterial(material_id: string): Promise<{ status: boolean }> {
+    const session = await getServerSession(authOptions);
+    const novoMaterial = await fetch(`${baseURL}servicos/remover-material/${material_id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        },
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 201) return;
+        return response.json();
+    });
+    return novoMaterial;
+}
+
 export {
     atualizar,
     adicionarSuspensao,
@@ -181,5 +197,6 @@ export {
     criar,
     finalizarServico,
     avaliarServico,
-    retomarServico
+    retomarServico,
+    removerMaterial
 };

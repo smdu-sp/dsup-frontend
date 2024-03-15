@@ -149,9 +149,9 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     }
 
     function handleRemoverMaterial(material_id: string) {
-        // servicoServices.removerMaterial(material_id).then((response: IMaterial) => {
-        //     atualizaDados();
-        // })
+        servicoServices.removerMaterial(material_id).then((response: { status: boolean }) => {
+            atualizaDados();
+        })
     }
 
     function handleSubmit() {
