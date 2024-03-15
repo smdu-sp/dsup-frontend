@@ -31,6 +31,10 @@ export interface IServico {
 
 export interface IMaterial {
     id: string;
+    nome: string;
+    quantidade: number;
+    medida: string;
+    servico_id: string;
 }
 
 export interface ISuspensao {
@@ -153,9 +157,27 @@ async function retomarServico(id: string): Promise<ISuspensao> {
     return suspensao; 
 }
 
+async function adicionarMaterial(servico_id: string, adicionarMaterialDto: { nome: string, quantidade: number, medida: string }): Promise<IMaterial> {
+    const session = await getServerSession(authOptions);
+    const novoMaterial = await fetch(`${baseURL}servicos/adicionar-material/${servico_id}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify(adicionarMaterialDto)
+    }).then(async (response) => {
+        if (response.status === 401) await Logout();
+        if (response.status !== 201) return;
+        return response.json();
+    });
+    return novoMaterial;
+}
+
 export {
     atualizar,
     adicionarSuspensao,
+    adicionarMaterial,
     criar,
     finalizarServico,
     avaliarServico,

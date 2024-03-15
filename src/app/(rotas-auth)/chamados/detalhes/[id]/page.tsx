@@ -2,7 +2,7 @@
 
 import Content from "@/components/Content";
 import { Abc, Add, Business, Check, Close, Handyman, Pause, PlayArrow, Timer } from "@mui/icons-material";
-import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent } from "@mui/joy";
+import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent, ListItem, List, IconButton, ListItemButton } from "@mui/joy";
 import { useRouter } from "next/navigation";
 import { use, useContext, useEffect, useState } from "react";
 import * as servicoServices from "@/shared/services/servico.services";
@@ -12,7 +12,7 @@ import * as usuarioServices from "@/shared/services/usuario.services";
 import { IOrdem } from "@/shared/services/ordem.services";
 import { IUnidade } from "@/shared/services/unidade.services";
 import { AlertsContext } from "@/providers/alertsProvider";
-import { IServico, ISuspensao } from "@/shared/services/servico.services";
+import { IMaterial, IServico, ISuspensao } from "@/shared/services/servico.services";
 import { IUsuario } from "@/shared/services/usuario.services";
 import { ChipPropsColorOverrides, Modal } from "@mui/material";
 import Timeline from "@mui/lab/Timeline";
@@ -47,6 +47,10 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [adicionaSuspensaoModal, setAdicionaSuspensaoModal] = useState(false);
     const [motivoSuspensao, setMotivoSuspensao] = useState('');
     const [servicoSuspensao, setServicoSuspensao] = useState('');
+    const [nomeMaterial, setNomeMaterial] = useState('');
+    const [quantidadeMaterial, setQuantidadeMaterial] = useState(0);
+    const [medidaMaterial, setMedidaMaterial] = useState('un');
+    const [adicionaMaterialServico, setAdicionaMaterialServico] = useState('');
 
     const statusChip: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
       { label: '', color: 'neutral' },
@@ -130,6 +134,26 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
         })
     }
 
+    function handleAdicionarMaterial() {
+        servicoServices.adicionarMaterial(adicionaMaterialServico, { nome: nomeMaterial, quantidade: quantidadeMaterial, medida: medidaMaterial })
+        .then((response: IMaterial) => {
+            if (response.nome === nomeMaterial) {
+                setNomeMaterial('');
+                setQuantidadeMaterial(0);
+                setMedidaMaterial('un');
+                setAdicionaMaterialServico('');
+                setAdicionaMaterialModal(false);
+                atualizaDados();
+            }
+        })
+    }
+
+    function handleRemoverMaterial(material_id: string) {
+        // servicoServices.removerMaterial(material_id).then((response: IMaterial) => {
+        //     atualizaDados();
+        // })
+    }
+
     function handleSubmit() {
         if (!id) {
             let erros = 0;
@@ -174,19 +198,29 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
         }
     }
     return (<>
-        <Modal open={adicionaMaterialModal} onClose={() => setAdicionaMaterialModal(false)}>
+        <Modal open={adicionaMaterialModal} sx={{ zIndex: 99 }} onClose={() => setAdicionaMaterialModal(false)}>
             <ModalDialog>
                 <DialogTitle>Adicionar material utilizado</DialogTitle>
                 <Stack spacing={2}>
                     <FormControl>
-                        <FormLabel>Name</FormLabel>
-                        <Input autoFocus required />
+                        <FormLabel>Material</FormLabel>
+                        <Input value={nomeMaterial} onChange={(event) => setNomeMaterial(event.target.value)} />
                     </FormControl>
                     <FormControl>
-                        <FormLabel>Description</FormLabel>
-                        <Input required />
-                    </FormControl>
-                    <Button>Submit</Button>
+                        <FormLabel>Quantidade</FormLabel>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Input type="number" value={quantidadeMaterial} onChange={(event) => {
+                                const value = parseFloat(event.target.value) || 0;
+                                setQuantidadeMaterial(value < 0 ? 0 : value);
+                            }} />
+                            <Select value={medidaMaterial} sx={{ zIndex: 100 }} onChange={(_, value) => setMedidaMaterial(value || "un")}>
+                                <Option value="un">unidade(s)</Option>
+                                <Option value="m">metro(s)</Option>
+                                <Option value="kg">kg(s)</Option>
+                            </Select>
+                        </Box>
+                    </FormControl> 
+                    <Button color="success" onClick={() => handleAdicionarMaterial()}>Adicionar</Button>
                 </Stack>
             </ModalDialog>
         </Modal>
@@ -413,6 +447,28 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             </FormControl>
                                         </Stack></> : null }
                                     </Stack>
+                                    {servico.materiais && servico.materiais.length > 0 ? 
+                                        <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
+                                            <Stack spacing={2}>
+                                                <List>
+                                                    {servico.materiais.map((material: IMaterial, index: number) => (
+                                                        <ListItem
+                                                            endAction={
+                                                                (servico.status === 1 || servico.status === 5) && ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '') &&
+                                                                <IconButton aria-label="Remover" size="sm" color="danger" variant="soft" onClick={() => {
+                                                                    handleRemoverMaterial(material.id);
+                                                                }}>
+                                                                    <Close />
+                                                                </IconButton>
+                                                            }
+                                                        >
+                                                            <ListItemButton sx={{ borderRadius: 8 }}>{material.nome} ({material.quantidade}{material.medida})</ListItemButton>
+                                                        </ListItem>
+                                                    ))}
+                                                </List>
+                                            </Stack>
+                                        </CardOverflow>
+                                    : null}
                                     {(servico.status === 1 || servico.status === 5) && ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '') ?
                                     <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
                                         <Stack spacing={2}>
@@ -422,7 +478,13 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                         Retomar serviço
                                                     </Button>                                                    
                                                 : <>
-                                                    <Button size="sm" variant="solid" color="primary" startDecorator={<Add />} onClick={() => setAdicionaMaterialModal(true)}>
+                                                    <Button size="sm" variant="solid" color="primary" startDecorator={<Add />} onClick={() => {
+                                                        setAdicionaMaterialModal(true);
+                                                        setAdicionaMaterialServico(servico.id);
+                                                        setNomeMaterial('');
+                                                        setQuantidadeMaterial(0);
+                                                        setMedidaMaterial('un');
+                                                    }}>
                                                         Adicionar material
                                                     </Button>
                                                     <Button size="sm" variant="solid" color="warning" startDecorator={<Pause />} onClick={() => {
