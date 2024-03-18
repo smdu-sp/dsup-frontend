@@ -296,7 +296,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </TimelineSeparator>
                                 <TimelineContent sx={{ flexGrow: 1 }}>
                                     <Card>
-                                        {(servico.status === 2 && usuario?.permissao !== 'USR') || (servico.status < 2) ? <Typography level='title-md'>Aguardando avaliação</Typography> :
+                                        {(servico.status === 2 && (usuario?.permissao !== 'USR' || usuario?.id === ordem?.solicitante_id)) || (servico.status < 2) ? <Typography level='title-md'>Aguardando avaliação</Typography> :
                                         <Stack spacing={2}>
                                             <Stack direction="row" spacing={2}>
                                                 <FormControl sx={{ flexGrow: 1 }}>
