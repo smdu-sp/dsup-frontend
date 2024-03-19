@@ -32,11 +32,13 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [prioridade, setPrioridade] = useState<number>(1);
     const [sala, setSala] = useState('');
     const [observacoes, setObservacoes] = useState('');
+    const [telefone, setTelefone] = useState('');
     const [salaError, setSalaError] = useState('');
     const [observacoesError, setObservacoesError] = useState('');
     const [unidade_idError, setUnidade_idError] = useState('');
     const [andarError, setAndarError] = useState('');
     const [tipoError, setTipoError] = useState('');
+    const [telefoneError, setTelefoneError] = useState('');
     const [servicos, setServicos] = useState<IServico[]>([]);
     const [usuario, setUsuario] = useState<IUsuario>();
     const [servicoAtualStatus, setServicoAtualStatus] = useState(1);
@@ -67,6 +69,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                 setUnidade_id(ordem.unidade_id);
                 setAndar(ordem.andar);
                 setTipo(ordem.tipo);
+                setTelefone(ordem.telefone);
                 setSala(ordem.sala);
                 setObservacoes(ordem.observacoes);
                 setPrioridade(ordem.prioridade);
@@ -169,6 +172,10 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                 setTipoError('É obrigatório informar o tipo');
                 erros++;
             }
+            if (!tipo){
+                setTelefoneError('É obrigatório informar o telefone');
+                erros++;
+            }
             if (sala === ''){
                 setSalaError('É obrigatório informar a sala');
                 erros++;
@@ -183,7 +190,8 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     andar,
                     sala,
                     tipo,
-                    observacoes
+                    observacoes,
+                    telefone
                 }).then((ordem: IOrdem) => {
                     if (!ordem) setAlert('Erro', 'Erro ao criar chamado!', 'danger', 3000, Cancel);
                     if (ordem) router.push('/chamados?criado=1');
@@ -597,10 +605,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             </Select>
                                             <FormHelperText sx={{ color: 'danger.500' }}>{andarError}</FormHelperText>
                                         </FormControl>
-                                    </Stack>
-                                    <Divider />
-                                    <Stack direction="row" spacing={2}>
-                                        <FormControl sx={{ flexGrow: 1 }}>
+                                        <FormControl>
                                             <FormLabel>Sala</FormLabel>
                                             <Input
                                                 size="sm"
@@ -614,6 +619,24 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                 disabled={id ? true : false}
                                             />
                                             <FormHelperText sx={{ color: 'danger.500' }}>{salaError}</FormHelperText>
+                                        </FormControl>
+                                    </Stack>
+                                    <Divider />
+                                    <Stack direction="row" spacing={2}>
+                                        <FormControl sx={{ flexGrow: 1 }}>
+                                            <FormLabel>Telefone</FormLabel>
+                                            <Input
+                                                size="sm"
+                                                type="text"
+                                                placeholder="Telefone de contato"
+                                                value={telefone}
+                                                onChange={(event) => {
+                                                    setTelefone(event.target.value && event.target.value)
+                                                    setTelefoneError('');
+                                                }}
+                                                disabled={id ? true : false}
+                                            />
+                                            <FormHelperText sx={{ color: 'danger.500' }}>{telefoneError}</FormHelperText>
                                         </FormControl>
                                         <FormControl sx={{ flexGrow: 1 }}>
                                             <FormLabel>Tipo</FormLabel>
