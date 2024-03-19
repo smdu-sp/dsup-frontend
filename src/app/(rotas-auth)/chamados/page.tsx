@@ -360,8 +360,8 @@ function SearchChamados() {
         </thead>
         <tbody>
           {ordens && ordens.length > 0 ? ordens.map((ordem) => (
-            <Tooltip key={ordem.id} component={'a'} href={`/chamados/detalhes/${ordem.id}`} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
-              <tr key={ordem.id}>
+            <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
+              <tr style={{ cursor: 'pointer' }} onClick={() => router.push('/chamados/detalhes/' + ordem.id)} key={ordem.id}>
                 <td><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? ordem.id : '-'}</Chip></td>
                 <td><Chip variant='solid' color={statusChip[ordem.status].color} title={statusChip[ordem.status].label}>{ordem.status ? statusChip[ordem.status].label : '-'}</Chip></td>
                 <td>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
