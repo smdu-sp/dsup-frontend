@@ -1,10 +1,14 @@
 'use server'
 
 import { authOptions } from "@/shared/auth/authOptions";
-import { Session, getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
-import { redirect } from "next/navigation";
 import { IUnidade } from "./unidade.services";
+
+async function Logout() {
+    await signOut({ redirect: false });
+    window.location.href = '/login';
+}
 
 export interface IUsuario {
     id: string;
@@ -53,7 +57,7 @@ async function listaCompleta(): Promise<IUsuario[]> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         return response.json();
     })
     return usuarios;
@@ -68,7 +72,7 @@ async function buscarTudo(status: number = 1, pagina: number = 1, limite: number
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         return response.json();
     })
     return usuarios;
@@ -83,7 +87,7 @@ async function buscarPorId(id: string): Promise<IUsuario> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         return response.json();
     })
     return usuario;
@@ -98,7 +102,7 @@ async function autorizar(id: string): Promise<{ autorizado: boolean }> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status !== 200) return;
         return response.json();
     })
@@ -114,7 +118,7 @@ async function criar(data: ICreateUsuario): Promise<IUsuario> {
             "Authorization": `Bearer ${session?.access_token}`
         }, body: JSON.stringify(data)
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         // if (response.status !== 200) return;
         return response.json();
     })
@@ -130,7 +134,7 @@ async function atualizar(id: string, data: IUpdateUsuario): Promise<IUsuario> {
             "Authorization": `Bearer ${session?.access_token}`
         }, body: JSON.stringify(data)
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status !== 200) return;
         return response.json();
     })
@@ -146,7 +150,7 @@ async function desativar(id: string): Promise<{ desativado: boolean }> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status !== 200) return;
         return response.json();
     });
@@ -162,7 +166,7 @@ async function validaUsuario(): Promise<IUsuario> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         return response.json();
     })
     return usuario;
@@ -177,7 +181,7 @@ async function buscarNovo(login: string): Promise<{ login?: string, nome?: strin
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status === 403) {
             return { message: 'Usuário já cadastrado.'}
         }

@@ -8,9 +8,8 @@ import { IUsuario } from "./usuario.services";
 import { IOrdem } from "./ordem.services";
 
 async function Logout() {
-    const router = useRouter();
     await signOut({ redirect: false });
-    router.replace('/login');
+    window.location.href = '/login';
 }
 
 export interface IServico {

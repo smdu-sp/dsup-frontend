@@ -1,9 +1,13 @@
 'use server'
 
 import { authOptions } from "@/shared/auth/authOptions";
-import { Session, getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
-import { redirect } from "next/navigation";
+
+async function Logout() {
+    await signOut({ redirect: false });
+    window.location.href = '/login';
+}
 
 export interface IUnidade {
     id: string;
@@ -31,7 +35,7 @@ async function listaCompleta(): Promise<IUnidade[]> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         return response.json();
     })
     return unidades;
@@ -46,7 +50,7 @@ async function buscarTudo(status: string = 'true', pagina: number = 1, limite: n
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         return response.json();
     })
     return unidades;
@@ -61,7 +65,7 @@ async function buscarPorId(id: string): Promise<IUnidade> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         return response.json();
     })
     return unidade;
@@ -76,7 +80,7 @@ async function desativar(id: string): Promise<{ autorizado: boolean }> {
             "Authorization": `Bearer ${session?.access_token}`
         }
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status !== 200) return;
         return response.json();
     });
@@ -98,7 +102,7 @@ async function criar({ nome, codigo, sigla, status }: { nome: string, codigo: st
             status: status === 'true'
         })
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status !== 201) return;
         return response.json();
     });
@@ -120,7 +124,7 @@ async function atualizar({ id, nome, codigo, sigla, status }: { id: string, nome
             status: status === 'true'
         })
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status !== 200) return;
         return response.json();
     });
@@ -137,7 +141,7 @@ async function ativar(id: string): Promise<IUnidade> {
         },
         body: JSON.stringify({ status: true })
     }).then((response) => {
-        if (response.status === 401) signOut();
+        if (response.status === 401) Logout();
         if (response.status !== 200) return;
         return response.json();
     });
