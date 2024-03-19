@@ -660,10 +660,9 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                     {!ordem ? <Button size="sm" variant="outlined" color="neutral" onClick={() => router.back()}>
                                         Cancelar
                                     </Button> : null }
-                                    
-                                        <Button size="sm" variant="solid" color="primary" onClick={handleSubmit}>
-                                            Salvar
-                                        </Button>
+                                    {[1, 2, 5].includes(ordem?.status || 0) ? <Button size="sm" variant="solid" color="primary" onClick={handleSubmit}>
+                                        Salvar
+                                    </Button> : null}
                                     </CardActions>
                                 </CardOverflow> : null}
                             </Card>
