@@ -3,15 +3,13 @@
 import { authOptions } from "@/shared/auth/authOptions";
 import { getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { IUnidade } from "./unidade.services";
 import { IUsuario } from "./usuario.services";
 import { IServico } from "./servico.services";
 
 async function Logout() {
-    const router = useRouter();
     await signOut({ redirect: false });
-    router.replace('/login');
+    window.location.href = '/login';
 }
 
 export interface IOrdem {

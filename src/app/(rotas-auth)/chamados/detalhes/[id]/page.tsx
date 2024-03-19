@@ -1,7 +1,7 @@
 'use client'
 
 import Content from "@/components/Content";
-import { Abc, Add, Business, Check, Close, Handyman, Pause, PlayArrow, Timer } from "@mui/icons-material";
+import { Abc, Add, Business, Cancel, Check, Close, Handyman, Pause, PlayArrow, Timer, X } from "@mui/icons-material";
 import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent, ListItem, List, IconButton, ListItemButton } from "@mui/joy";
 import { useRouter } from "next/navigation";
 import { use, useContext, useEffect, useState } from "react";
@@ -185,16 +185,16 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     tipo,
                     observacoes
                 }).then((ordem: IOrdem) => {
-                    setAlert('Chamado criado com sucesso!', 'Sucesso', 'success', 3000, Check);
+                    if (!ordem) setAlert('Erro', 'Erro ao criar chamado!', 'danger', 3000, Cancel);
                     if (ordem) router.push('/chamados?criado=1');
-                })
+                });
         } else {
             ordemServices.atualizar(id, {
                 prioridade
             }).then((ordem: IOrdem) => {
-                setAlert('Chamado alterado com sucesso!', 'Sucesso', 'success', 3000, Check);
+                if (!ordem) setAlert('Erro', 'Erro ao atualizar chamado!', 'danger', 3000, Cancel);
                 if (ordem) router.push('/chamados?criado=2');
-            })
+            });
         }
     }
     return (<>
@@ -338,7 +338,8 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                             Avaliar
                                                         </Button>
                                                     </CardActions>
-                                                </CardOverflow> : null}
+                                                </CardOverflow>
+                                            : null}
                                         </Stack>}
                                     </Card>
                                 </TimelineContent>
@@ -443,7 +444,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                             setServicoAtualDescricao(event.target.value);
                                                             setServicoAtualSalvar(event.target.value === servico.descricao);
                                                     }}
-                                                    disabled={servico.status > 1 || !['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '')}
+                                                    disabled={servico.status > 1 || !['TEC'].includes(usuario?.permissao || '')}
                                                 />
                                             </FormControl>
                                         </Stack></> : null }
@@ -470,7 +471,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             </Stack>
                                         </CardOverflow>
                                     : null}
-                                    {(servico.status === 1 || servico.status === 5) && ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '') ?
+                                    {(servico.status === 1 || servico.status === 5) && ['TEC'].includes(usuario?.permissao || '') ?
                                     <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
                                         <Stack spacing={2}>
                                             {index === 0 ? <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
