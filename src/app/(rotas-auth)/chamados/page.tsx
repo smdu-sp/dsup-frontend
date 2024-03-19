@@ -360,7 +360,7 @@ function SearchChamados() {
         </thead>
         <tbody>
           {ordens && ordens.length > 0 ? ordens.map((ordem) => (
-            <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
+            <Tooltip key={ordem.id} component={'a'} href={`/chamados/detalhes/${ordem.id}`} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
               <tr key={ordem.id}>
                 <td><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? ordem.id : '-'}</Chip></td>
                 <td><Chip variant='solid' color={statusChip[ordem.status].color} title={statusChip[ordem.status].label}>{ordem.status ? statusChip[ordem.status].label : '-'}</Chip></td>
@@ -377,7 +377,7 @@ function SearchChamados() {
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                     {['DEV', 'ADM', 'TEC'].includes(logado ? logado.permissao : '') && ordem.status === 1 ?
-                      <Tooltip title="Assumir Chamado" arrow placement="top">
+                      <Tooltip title={logado?.permissao === "TEC" ? "Assumir Chamado" : "Atribuir Chamado"} arrow placement="top">
                         <IconButton onClick={() => {
                           setOrdem_id(ordem.id);
                           setPrioridade(ordem.prioridade);
@@ -385,13 +385,8 @@ function SearchChamados() {
                         }} size="sm" color="primary">
                           <Build />
                         </IconButton>
-                      </Tooltip> : 
+                      </Tooltip> :
                     null}
-                    <Tooltip title="Detalhes" arrow placement="top">
-                      <IconButton component="a" href={`/chamados/detalhes/${ordem.id.replace('/', '-')}`} size="sm" color="warning">
-                        <Edit />
-                      </IconButton>
-                    </Tooltip>
                   </div>
                 </td>
               </tr>
