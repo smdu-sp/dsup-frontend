@@ -361,7 +361,7 @@ function SearchChamados() {
         <tbody>
           {ordens && ordens.length > 0 ? ordens.map((ordem) => (
             <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
-              <tr style={{ cursor: 'pointer' }} onClick={() => router.push('/chamados/detalhes/' + ordem.id)} key={ordem.id}>
+              <><tr style={{ cursor: 'pointer' }} onClick={() => router.push('/chamados/detalhes/' + ordem.id)} key={ordem.id}>
                 <td><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? ordem.id : '-'}</Chip></td>
                 <td><Chip variant='solid' color={statusChip[ordem.status].color} title={statusChip[ordem.status].label}>{ordem.status ? statusChip[ordem.status].label : '-'}</Chip></td>
                 <td>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
@@ -374,22 +374,22 @@ function SearchChamados() {
                   setTipo(ordem.tipo);
                   router.push(pathname + '?' + createQueryString('tipo', String(ordem.tipo)));
                 }} color={tipos[ordem.tipo].color}>{tipos[ordem.tipo].label}</Chip></td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    {['DEV', 'ADM', 'TEC'].includes(logado ? logado.permissao : '') && ordem.status === 1 ?
-                      <Tooltip title={logado?.permissao === "TEC" ? "Assumir Chamado" : "Atribuir Chamado"} arrow placement="top">
-                        <IconButton onClick={() => {
-                          setOrdem_id(ordem.id);
-                          setPrioridade(ordem.prioridade);
-                          setAtribuirChamadoModal(true);
-                        }} size="sm" color="primary">
-                          <Build />
-                        </IconButton>
-                      </Tooltip> :
-                    null}
-                  </div>
-                </td>
               </tr>
+              <td>
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                  {['DEV', 'ADM', 'TEC'].includes(logado ? logado.permissao : '') && ordem.status === 1 ?
+                    <Tooltip title={logado?.permissao === "TEC" ? "Assumir Chamado" : "Atribuir Chamado"} arrow placement="top">
+                      <IconButton onClick={() => {
+                        setOrdem_id(ordem.id);
+                        setPrioridade(ordem.prioridade);
+                        setAtribuirChamadoModal(true);
+                      }} size="sm" color="primary">
+                        <Build />
+                      </IconButton>
+                    </Tooltip> :
+                  null}
+                </div>
+              </td></>
             </Tooltip>
           )) : <tr><td colSpan={7}>Nenhum chamado encontrado</td></tr>}
         </tbody>
