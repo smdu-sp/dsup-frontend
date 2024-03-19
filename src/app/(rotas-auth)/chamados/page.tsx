@@ -391,7 +391,7 @@ function SearchChamados() {
                 </td>
               </tr>
             </Tooltip>
-          )) : <tr><td colSpan={7}>Nenhuma chamado encontrado</td></tr>}
+          )) : <tr><td colSpan={7}>Nenhum chamado encontrado</td></tr>}
         </tbody>
       </Table>
       {(total && total > 0) ? <TablePagination

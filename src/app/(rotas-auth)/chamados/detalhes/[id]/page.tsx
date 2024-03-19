@@ -654,7 +654,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                         </FormControl>
                                     </Stack>
                                 </Stack>
-                                {(!ordem || ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '')) && [1, 2, 5].includes(ordem?.status || 0) ? 
+                                {(!ordem || ['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || 'USR')) && [1, 2, 5].includes(ordem?.status || 1) ? 
                                 <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
                                     <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
                                     {!ordem ? <Button size="sm" variant="outlined" color="neutral" onClick={() => router.back()}>
