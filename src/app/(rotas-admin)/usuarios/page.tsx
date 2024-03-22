@@ -33,6 +33,7 @@ function SearchUsuarios() {
   const [permissao, setPermissao] = useState('');
   const [unidade_id, setUnidade_id] = useState('');
   const [unidades, setUnidades] = useState<IUnidade[]>([]);
+  const [usuario, setUsuario] = useState<IUsuario>({} as IUsuario);
 
   const confirmaVazio: {
     aberto: boolean,
@@ -57,6 +58,10 @@ function SearchUsuarios() {
     unidadeServices.listaCompleta()
         .then((response: IUnidade[]) => {
             setUnidades(response);
+        })
+    usuarioServices.validaUsuario()
+        .then((response: IUsuario) => {
+            setUsuario(response);
         })
     buscaUsuarios();
   }, [ status, pagina, limite, permissao, unidade_id ]);
@@ -104,7 +109,7 @@ function SearchUsuarios() {
   
   const desativaUsuario = async (id: string) => {
     var resposta: { desativado: boolean } = await usuarioServices.desativar(id);
-    if (resposta.desativado){
+    if (resposta && resposta.desativado){
       setAlert('Usuário desativado!', 'Esse usuário foi desativado e não poderá acessar o sistema.', 'success', 3000, Check);
       buscaUsuarios();
     } else {
@@ -142,8 +147,8 @@ function SearchUsuarios() {
     setConfirma({ 
       aberto: true,
       confirmaOperacao: () => desativaUsuario(id),
-      titulo: 'Desativar usuário',
-      pergunta: 'Deseja desativar este usuário?',
+      titulo: 'Excluir usuário',
+      pergunta: 'Deseja excluir este usuário?',
       color: 'warning'
     });
   }
@@ -206,7 +211,7 @@ function SearchUsuarios() {
       >
         <IconButton size='sm' onClick={buscaUsuarios}><Refresh /></IconButton>
         <IconButton size='sm' onClick={limpaFitros}><Clear /></IconButton>
-        <FormControl size="sm">
+        {usuario.permissao === 'DEV' ? (<FormControl size="sm">
           <FormLabel>Status: </FormLabel>
           <Select
             size="sm"
@@ -220,7 +225,7 @@ function SearchUsuarios() {
             <Option value={2}>Inativos</Option>
             <Option value={4}>Todos</Option>
           </Select>
-        </FormControl>
+        </FormControl>) : null}
         <FormControl size="sm">
           <FormLabel>Permissão: </FormLabel>
           <Select
@@ -322,8 +327,8 @@ function SearchUsuarios() {
                         <Check />
                       </IconButton>
                     </Tooltip>                    
-                  ) : (<Tooltip title="Desativar" arrow placement="top">
-                    <IconButton title="Desativar" size="sm" color="danger" onClick={() => confirmaDesativaUsuario(usuario.id)}>
+                  ) : (<Tooltip title="Excluir" arrow placement="top">
+                    <IconButton title="Excluir" size="sm" color="danger" onClick={() => confirmaDesativaUsuario(usuario.id)}>
                       <Cancel />
                     </IconButton>
                   </Tooltip>)}

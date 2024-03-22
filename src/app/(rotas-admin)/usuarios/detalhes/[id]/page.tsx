@@ -78,7 +78,9 @@ export default function UsuarioDetalhes(props: any) {
         if (login)
             usuarioServices.buscarNovo(login).then((response) => {
                 if (response.message) setAlert('Erro', response.message, 'warning', 3000, Warning);
-                if (response.email) {
+                if (response.id)
+                    router.push('/usuarios/detalhes/' + response.id);
+                else if (response.email) {
                     setNome(response.nome ? response.nome : '');
                     setLogin(response.login ? response.login : '');
                     setEmail(response.email ? response.email : '');

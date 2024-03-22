@@ -172,7 +172,7 @@ async function validaUsuario(): Promise<IUsuario> {
     return usuario;
 }
 
-async function buscarNovo(login: string): Promise<{ login?: string, nome?: string, email?: string, unidade_id?: string, message?: string }> {
+async function buscarNovo(login: string): Promise<{ id?: string, login?: string, nome?: string, email?: string, unidade_id?: string, message?: string }> {
     const session = await getServerSession(authOptions);
     const usuario = await fetch(`${baseURL}usuarios/buscar-novo?login=${login}`, {
         method: "GET",
