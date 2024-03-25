@@ -2,7 +2,7 @@
 
 import Content from "@/components/Content";
 import { Abc, Add, Business, Cancel, Check, Close, Handyman, Pause, PlayArrow, Timer, X } from "@mui/icons-material";
-import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent, ListItem, List, IconButton, ListItemButton } from "@mui/joy";
+import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent, ListItem, List, IconButton, ListItemButton, AutocompleteOption } from "@mui/joy";
 import { useRouter } from "next/navigation";
 import { use, useContext, useEffect, useState } from "react";
 import * as servicoServices from "@/shared/services/servico.services";
@@ -566,8 +566,13 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             {!ordem ? <Autocomplete
                                                 autoFocus
                                                 options={unidades}
-                                                getOptionLabel={(option) => option && `${option.sigla}`}
-                                                value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
+                                                getOptionLabel={(option) => option && option.sigla}
+                                                renderOption={(props, option) => (
+                                                  <AutocompleteOption {...props} key={option.id} value={option.id}>
+                                                    {option.sigla}
+                                                  </AutocompleteOption>
+                                                )}
+                                                value={unidade_id && unidade_id !== '' ? unidades.find((unidade: IUnidade) => unidade.id === unidade_id) : null}
                                                 onChange={(_, value) => {
                                                     value  && setUnidade_id(value?.id);
                                                     setUnidade_idError('');

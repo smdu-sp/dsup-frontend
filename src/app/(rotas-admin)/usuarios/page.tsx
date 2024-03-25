@@ -4,7 +4,7 @@ import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import * as unidadeServices from '@/shared/services/unidade.services';
-import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
+import { Autocomplete, AutocompleteOption, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
 import { Add, Cancel, Check, Clear, Edit, Refresh, Search, Warning } from '@mui/icons-material';
 import { IPaginadoUsuario, IUsuario } from '@/shared/services/usuario.services';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -247,9 +247,14 @@ function SearchUsuarios() {
           <FormLabel>Unidade: </FormLabel>
           <Autocomplete
               options={unidades}
-              getOptionLabel={(option) => option && `${option.sigla}`}
+              getOptionLabel={(option) => option && option.sigla}
+              renderOption={(props, option) => (
+                <AutocompleteOption {...props} key={option.id} value={option.id}>
+                  {option.sigla}
+                </AutocompleteOption>
+              )}
               placeholder="Unidade"
-              value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
+              value={unidade_id && unidade_id !== '' ? unidades.find((unidade: IUnidade) => unidade.id === unidade_id) : null}
               onChange={(_, value) => {
                 router.push(pathname + '?' + createQueryString('unidade_id', value ? value.id : ''));
                 setUnidade_id(value ? value.id : '') ;

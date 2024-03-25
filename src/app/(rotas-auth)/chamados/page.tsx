@@ -2,7 +2,7 @@
 
 import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
-import { Autocomplete, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, DialogTitle, FormControl, FormLabel, IconButton, Modal, ModalDialog, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
+import { Autocomplete, AutocompleteOption, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, DialogTitle, FormControl, FormLabel, IconButton, Modal, ModalDialog, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
 import { Build, Check, Clear, Edit, Refresh } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
@@ -306,9 +306,14 @@ function SearchChamados() {
           <FormLabel>Unidade: </FormLabel>
           <Autocomplete
               options={unidades}
-              getOptionLabel={(option) => option && `${option.sigla}`}
+              getOptionLabel={(option) => option && option.sigla}
+              renderOption={(props, option) => (
+                <AutocompleteOption {...props} key={option.id} value={option.id}>
+                  {option.sigla}
+                </AutocompleteOption>
+              )}
               placeholder="Unidade"
-              value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
+              value={unidade_id && unidade_id !== '' ? unidades.find((unidade: IUnidade) => unidade.id === unidade_id) : null}
               onChange={(_, value) => {
                 router.push(pathname + '?' + createQueryString('unidade_id', value ? value.id : ''));
                 setUnidade_id(value ? value.id : '');
@@ -327,9 +332,14 @@ function SearchChamados() {
           <FormLabel>Solicitante: </FormLabel>
           <Autocomplete
               options={usuarios}
-              getOptionLabel={(option) => option && `${option.nome}`}
+              getOptionLabel={(option) => option && option.nome}
+              renderOption={(props, option) => (
+                <AutocompleteOption {...props} key={option.id} value={option.id}>
+                  {option.nome}
+                </AutocompleteOption>
+              )}
               placeholder="Solicitante"
-              value={solicitante_id && usuarios.find((usuario: IUsuario) => usuario.id === solicitante_id)}
+              value={solicitante_id && solicitante_id !== '' ? usuarios.find((usuario: IUsuario) => usuario.id === solicitante_id) : null}
               onChange={(_, value) => {
                 router.push(pathname + '?' + createQueryString('solicitante_id', value ? value.id : ''));
                 setSolicitante_id(value ? value.id : '') ;

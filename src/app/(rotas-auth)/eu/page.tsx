@@ -1,7 +1,7 @@
 'use client'
 
 import { useContext, useEffect, useState } from "react";
-import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormLabel, Input, Option, Select, Stack } from "@mui/joy";
+import { Autocomplete, AutocompleteOption, Box, Button, Card, CardActions, CardOverflow, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormLabel, Input, Option, Select, Stack } from "@mui/joy";
 import { Business, Check, EmailRounded } from "@mui/icons-material";
 import { useRouter } from 'next/navigation';
 import { OverridableStringUnion } from '@mui/types';
@@ -98,9 +98,14 @@ export default function UsuarioDetalhes() {
                                 <Autocomplete
                                     startDecorator={<Business />}
                                     options={unidades}
-                                    getOptionLabel={(option) => option && `${option.sigla}`}
+                                    getOptionLabel={(option) => option && option.sigla}
+                                    renderOption={(props, option) => (
+                                      <AutocompleteOption {...props} key={option.id} value={option.id}>
+                                        {option.sigla}
+                                      </AutocompleteOption>
+                                    )}
                                     placeholder="Unidade"
-                                    value={unidade_id && unidades.find((unidade: IUnidade) => unidade.id === unidade_id)}
+                                    value={unidade_id && unidade_id !== '' ? unidades.find((unidade: IUnidade) => unidade.id === unidade_id) : null}
                                     onChange={(_, value) => value  && setUnidade_id(value?.id)}
                                     filterOptions={(options, { inputValue }) => {
                                         if (unidades) return (options as IUnidade[]).filter((option) => (
