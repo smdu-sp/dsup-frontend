@@ -361,7 +361,9 @@ function SearchChamados() {
           <tr>
             <th>#</th>
             <th>Status</th>
+            <th>Prioridade</th>
             <th>Data</th>
+            <th>Técnico</th>
             <th>Solicitante</th>
             <th>Unidade</th>
             <th>Tipo</th>
@@ -372,9 +374,11 @@ function SearchChamados() {
           {ordens && ordens.length > 0 ? ordens.map((ordem) => (
             <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
               <tr key={ordem.id} style={{ cursor: 'pointer' }}>
-                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? ordem.id : '-'}</Chip></td>
+                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.id ? ordem.id : '-'}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip variant='solid' color={statusChip[ordem.status].color} title={statusChip[ordem.status].label}>{ordem.status ? statusChip[ordem.status].label : '-'}</Chip></td>
+                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? prioridades[ordem.prioridade].label : '-'}</Chip></td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
+                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.servicos ? ordem.servicos[0].tecnico?.nome : '-'}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.solicitante ? ordem.solicitante.nome : '-'}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.unidade && <Chip onClick={() => {
                   setUnidade_id(ordem.unidade_id);

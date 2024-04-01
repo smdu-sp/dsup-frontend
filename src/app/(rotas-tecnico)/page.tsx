@@ -28,19 +28,19 @@ export default async function SearchHome() {
           gap: 1,
         }}
       >
-        <Card color='warning' variant='solid' invertedColors sx={{ flexGrow: 0.5, height: '100%' }}>
+        <Card color='success' variant='plain' sx={{ flexGrow: 0.5, height: '100%', backgroundColor: 'success.300' }}>
           <CardContent>
             <CardContent sx={{ textAlign: 'right' }}>
               <Typography sx={{ fontSize: '15rem' }}>{abertos}</Typography>
-              <Typography>Chamados em aberto</Typography>
+              <Typography sx={{ fontSize: '3rem'}}>Chamados em aberto</Typography>
             </CardContent>
           </CardContent>
         </Card>
-        <Card color='danger' variant='solid' invertedColors sx={{ flexGrow: 0.5 }}>
+        <Card color='danger' variant='plain' sx={{ flexGrow: 0.5, backgroundColor: 'danger.300' }}>
           <CardContent>
             <CardContent sx={{ textAlign: 'right' }}>
               <Typography sx={{ fontSize: '15rem' }}>{permissao === 'USR' ? concluidos : naoAtribuidos}</Typography>
-              <Typography>Chamados {permissao === 'USR' ? 'concluídos' : 'nao atribuidos'}</Typography>
+              <Typography sx={{ fontSize: '3rem'}}>Chamados {permissao === 'USR' ? 'concluídos' : 'não atribuídos'}</Typography>
             </CardContent>
           </CardContent>
         </Card>
