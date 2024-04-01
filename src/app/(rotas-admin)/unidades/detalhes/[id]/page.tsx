@@ -84,7 +84,7 @@ export default function UnidadeDetalhes(props: { params: { id: string } }) {
                                     <FormLabel>Status</FormLabel>
                                     <Select
                                         value={status}
-                                        onChange={(event, value) => value && setStatus(value)}
+                                        onChange={(_, value) => value && setStatus(value)}
                                         size="sm"
                                         placeholder="Status"
                                         startDecorator={<Business />}

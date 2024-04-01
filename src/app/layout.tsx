@@ -67,6 +67,17 @@ const theme = extendTheme({
           "700": "#89041e",
           "800": "#520312",
           "900": "#1b0106"
+        },
+        warning: {
+          solidColor: '#000',
+          solidBg: '#ffc107',
+          solidBorder: '#ffc107',
+          solidHoverBg: '#ffca2c',
+          solidHoverBorder: '#ffc720',
+          solidActiveBg: '#ffcd39',
+          solidActiveBorder: '#ffc720',
+          solidDisabledBg: '#ffc107',
+          solidDisabledBorder: '#ffc107',
         }
       }
     },
@@ -83,6 +94,17 @@ const theme = extendTheme({
           "700": "#092b85",
           "800": "#051a50",
           "900": "#02091b"
+        },
+        warning: {
+          solidColor: '#000',
+          solidBg: '#ffc107',
+          solidBorder: '#ffc107',
+          solidHoverBg: '#ffca2c',
+          solidHoverBorder: '#ffc720',
+          solidActiveBg: '#ffcd39',
+          solidActiveBorder: '#ffc720',
+          solidDisabledBg: '#ffc107',
+          solidDisabledBorder: '#ffc107',
         }
       }
     }

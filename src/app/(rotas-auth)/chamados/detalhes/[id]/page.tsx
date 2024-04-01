@@ -1,10 +1,10 @@
 'use client'
 
 import Content from "@/components/Content";
-import { Abc, Add, Business, Cancel, Check, Close, Handyman, Pause, PlayArrow, Timer, X } from "@mui/icons-material";
+import { Add, Cancel, Check, Close, Handyman, Pause, PlayArrow, Timer } from "@mui/icons-material";
 import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent, ListItem, List, IconButton, ListItemButton, AutocompleteOption } from "@mui/joy";
 import { useRouter } from "next/navigation";
-import { use, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import * as servicoServices from "@/shared/services/servico.services";
 import * as ordemServices from "@/shared/services/ordem.services";
 import * as unidadeServices from "@/shared/services/unidade.services";
@@ -116,7 +116,6 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     }
 
     function handleSuspensao() {
-        // alert(motivoSuspensao + ' - ' + servicoSuspensao);
         servicoServices.adicionarSuspensao(servicoSuspensao, { motivo: motivoSuspensao}).then((response: ISuspensao) => {
             if (response.motivo === motivoSuspensao) {
                 setMotivoSuspensao('');
@@ -205,6 +204,18 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
             });
         }
     }
+    function formatarTelefone(value: string): string {
+        if (!value) return value;
+        const onlyNumbers = value.replace(/\D/g, '').substring(0, 11);
+        if (onlyNumbers.length <= 2)
+            return onlyNumbers.replace(/(\d{0,2})/, '($1');
+        if (onlyNumbers.length <= 6)
+            return onlyNumbers.replace(/(\d{0,2})(\d{0,4})/, '($1) $2');
+        if (onlyNumbers.length <= 10)
+            return onlyNumbers.replace(/(\d{0,2})(\d{0,4})(\d{0,4})/, '($1) $2-$3');
+        return onlyNumbers.replace(/(\d{0,2})(\d{0,5})(\d{0,4})/, '($1) $2-$3');
+    }
+
     return (<>
         <Modal open={adicionaMaterialModal} sx={{ zIndex: 99 }} onClose={() => setAdicionaMaterialModal(false)}>
             <ModalDialog>
@@ -636,6 +647,8 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                 placeholder="Telefone de contato"
                                                 value={telefone}
                                                 onChange={(event) => {
+                                                    if (event.target.value.length > 0)
+                                                        event.target.value = formatarTelefone(event.target.value);
                                                     setTelefone(event.target.value && event.target.value)
                                                     setTelefoneError('');
                                                 }}
