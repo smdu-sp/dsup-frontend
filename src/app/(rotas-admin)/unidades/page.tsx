@@ -3,7 +3,7 @@
 import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import * as unidadeServices from '@/shared/services/unidade.services';
-import { Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
+import { Box, Button, ChipPropsColorOverrides, ColorPaletteProp, FormControl, FormLabel, IconButton, Input, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
 import { Add, Cancel, Check, Clear, Edit, Refresh, Search, Warning } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
@@ -236,9 +236,9 @@ function SearchUnidades() {
                   theme.vars.palette.danger.plainActiveBg : 
                   undefined
             }}>
-              <td>{unidade.codigo}</td>
-              <td>{unidade.sigla}</td>
-              <td>{unidade.nome}</td>
+              <td onClick={() => router.push('/unidades/detalhes/' + unidade.id)}>{unidade.codigo}</td>
+              <td onClick={() => router.push('/unidades/detalhes/' + unidade.id)}>{unidade.sigla}</td>
+              <td onClick={() => router.push('/unidades/detalhes/' + unidade.id)}>{unidade.nome}</td>
               <td>
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                   {!unidade.status ? (
@@ -254,11 +254,6 @@ function SearchUnidades() {
                       </IconButton>
                     </Tooltip>
                   )}
-                  <Tooltip title="Detalhes" arrow placement="top">
-                    <IconButton component="a" href={`/unidades/detalhes/${unidade.id}`} size="sm" color="warning">
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
                 </div>
               </td>
             </tr>

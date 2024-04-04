@@ -200,5 +200,5 @@ export {
     criar,
     desativar,
     listaCompleta,
-    validaUsuario,
+    validaUsuario
 };

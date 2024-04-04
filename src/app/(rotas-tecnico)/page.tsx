@@ -28,19 +28,19 @@ export default async function SearchHome() {
           gap: 1,
         }}
       >
-        <Card color='success' variant='plain' sx={{ flexGrow: 0.5, height: '100%', backgroundColor: 'success.300' }}>
+        <Card color='success' invertedColors variant='plain' sx={{ flexGrow: 0.5, height: '100%', backgroundColor: 'success.300' }}>
           <CardContent>
             <CardContent sx={{ textAlign: 'right' }}>
-              <Typography sx={{ fontSize: '15rem' }}>{abertos}</Typography>
-              <Typography sx={{ fontSize: '3rem'}}>Chamados em aberto</Typography>
+              <Typography sx={{ fontSize: '15rem', color: 'neutral.700' }}>{abertos}</Typography>
+              <Typography sx={{ fontSize: '3rem', color: 'neutral.700'}}>Chamados em aberto</Typography>
             </CardContent>
           </CardContent>
         </Card>
-        <Card color='danger' variant='plain' sx={{ flexGrow: 0.5, backgroundColor: 'danger.300' }}>
+        <Card color='danger' invertedColors variant='plain' sx={{ flexGrow: 0.5, backgroundColor: 'danger.300' }}>
           <CardContent>
             <CardContent sx={{ textAlign: 'right' }}>
-              <Typography sx={{ fontSize: '15rem' }}>{permissao === 'USR' ? concluidos : naoAtribuidos}</Typography>
-              <Typography sx={{ fontSize: '3rem'}}>Chamados {permissao === 'USR' ? 'concluídos' : 'não atribuídos'}</Typography>
+              <Typography sx={{ fontSize: '15rem', color: 'neutral.700' }}>{permissao === 'USR' ? concluidos : naoAtribuidos}</Typography>
+              <Typography sx={{ fontSize: '3rem', color: 'neutral.700' }}>Chamados {permissao === 'USR' ? 'concluídos' : 'não atribuídos'}</Typography>
             </CardContent>
           </CardContent>
         </Card>

@@ -4,8 +4,6 @@ import { IMenu, menu } from '../app/menu';
 import { MenuContext } from '@/shared/contexts/MenuContext';
 import Usuario from './Usuario';
 import { ListSubheader } from '@mui/material';
-import { getSession } from 'next-auth/react';
-import { UsuarioToken } from '@/shared/interfaces/usuario-token';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import { IUsuario } from '@/shared/services/usuario.services';
 
@@ -15,7 +13,7 @@ const RenderMenu = (menu: IMenu, pagina?: string) => {
     usuarioServices.validaUsuario()
       .then((response: IUsuario) => {
         setPermissao(response.permissao);
-      });    
+      });
   }, [])
   return (
       <List

@@ -298,20 +298,21 @@ function SearchUsuarios() {
         <tbody>
           {usuarios ? usuarios.map((usuario) => (
             <tr key={usuario.id} style={{
+              cursor: 'pointer',
               backgroundColor: usuario.status === 3 ? 
                 theme.vars.palette.warning.plainActiveBg : 
                 usuario.status === 2 ? 
                   theme.vars.palette.danger.plainActiveBg : 
                   undefined
             }}>
-              <td>{usuario.nome}</td>
-              <td>{usuario.email}</td>
-              <td>{usuario.login}</td>
-              <td>{usuario.unidade && <Chip onClick={() => {
+              <td onClick={() => router.push('/usuarios/detalhes/' + usuario.id)}>{usuario.nome}</td>
+              <td onClick={() => router.push('/usuarios/detalhes/' + usuario.id)}>{usuario.email}</td>
+              <td onClick={() => router.push('/usuarios/detalhes/' + usuario.id)}>{usuario.login}</td>
+              <td onClick={() => router.push('/usuarios/detalhes/' + usuario.id)}>{usuario.unidade && <Chip onClick={() => {
                 setUnidade_id(usuario.unidade_id);
                 router.push(pathname + '?' + createQueryString('unidade_id', usuario.unidade_id));
               }} variant='outlined' color='neutral' title={usuario.unidade.nome}>{usuario.unidade.sigla}</Chip>}</td>
-              <td>
+              <td onClick={() => router.push('/usuarios/detalhes/' + usuario.id)}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>         
                   <Chip onClick={() => {
                     setPermissao(usuario.permissao);
@@ -321,11 +322,6 @@ function SearchUsuarios() {
               </td>
               <td>
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                  <Tooltip title="Detalhes" arrow placement="top">
-                    <IconButton component="a" href={`/usuarios/detalhes/${usuario.id}`} size="sm" color="warning">
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
                   {usuario.status !== 1 ? (
                     <Tooltip title="Aprovar usuário novo" arrow placement="top">
                       <IconButton size="sm" color="success" onClick={() => confirmaAutorizaUsuario(usuario.id)}>

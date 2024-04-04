@@ -103,8 +103,10 @@ function SearchChamados() {
         })
     usuarioServices.listaCompleta()
         .then((response: IUsuario[]) => {
+          if (response && response.length > 0){
             setUsuarios(response);
             setTecnicos(response.filter((usuario: IUsuario) => usuario.permissao === 'TEC'));
+          }
         })
     usuarioServices.validaUsuario()
         .then((response: IUsuario) => {
@@ -154,6 +156,12 @@ function SearchChamados() {
     setLimite(parseInt(event.target.value, 10));
     setPagina(1);
   };
+
+  function abreviaNome(nome: string): string {
+      const removeSecretaria = nome.split(' - ')[0];
+      const nomes = removeSecretaria.split(' ');
+      return nomes[0] + ' ' + nomes[nomes.length - 1];
+  }
 
   function atribuirChamado(){
     servicoServices.criar({ ordem_id, prioridade, tecnico_id }).then((response: IServico) => {
@@ -375,11 +383,11 @@ function SearchChamados() {
             <Tooltip key={ordem.id} title={ordem.observacoes} sx={{ maxWidth: '200px' }} arrow placement="bottom">
               <tr key={ordem.id} style={{ cursor: 'pointer' }}>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.id ? ordem.id : '-'}</td>
-                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip variant='solid' color={statusChip[ordem.status].color} title={statusChip[ordem.status].label}>{ordem.status ? statusChip[ordem.status].label : '-'}</Chip></td>
+                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.status ? statusChip[ordem.status].label : '-'}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? prioridades[ordem.prioridade].label : '-'}</Chip></td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
-                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.servicos ? ordem.servicos[0].tecnico?.nome : '-'}</td>
-                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.solicitante ? ordem.solicitante.nome : '-'}</td>
+                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.servicos[0]?.tecnico ? abreviaNome(ordem.servicos[0]?.tecnico?.nome) : '-'}</td>
+                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.solicitante ? abreviaNome(ordem.solicitante.nome) : '-'}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.unidade && <Chip onClick={() => {
                   setUnidade_id(ordem.unidade_id);
                   router.push(pathname + '?' + createQueryString('unidade_id', ordem.unidade_id));
@@ -405,7 +413,7 @@ function SearchChamados() {
                 </td>
               </tr>
             </Tooltip>
-          )) : <tr><td colSpan={7}>Nenhuma chamado encontrado</td></tr>}
+          )) : <tr><td colSpan={9}>Nenhuma chamado encontrado</td></tr>}
         </tbody>
       </Table>
       {(total && total > 0) ? <TablePagination
