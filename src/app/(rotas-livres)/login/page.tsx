@@ -1,11 +1,11 @@
 'use client'
 
-import { FormEvent, SyntheticEvent, useContext, useEffect, useState } from 'react';
-import { Button, Sheet, FormControl, Input, Snackbar, Typography, Stack } from '@mui/joy';
+import { SyntheticEvent, useContext, useEffect, useState } from 'react';
+import { Button, Sheet, FormControl, Input, SvgIcon, IconButton } from '@mui/joy';
 import Image from 'next/image';
 import logo from '@/assets/logo.png';
 import ThemeToggle from '@/components/ThemeToggle';
-import { Cancel, Key, Person } from '@mui/icons-material';
+import { Cancel, Key, Person, Visibility, VisibilityOff } from '@mui/icons-material';
 import React from 'react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
@@ -21,6 +21,7 @@ export default function Login() {
   const { setAlert } = useContext(AlertsContext);
   const [login, setLogin] = useState<string>('');
   const [senha, setSenha] = useState<string>('');
+  const [mostraSenha, setMostraSenha] = useState<boolean>(false);
 
   const router = useRouter();
   async function handleSubmit(event: SyntheticEvent) {
@@ -43,6 +44,7 @@ export default function Login() {
     window.addEventListener('resize', handleWindowResize);
     return () => {window.removeEventListener('resize', handleWindowResize)};
   }, []);
+
   return (
     <>
       <Sheet
@@ -107,8 +109,13 @@ export default function Login() {
             <FormControl>
               <Input
                 startDecorator={<Key />}
+                endDecorator={
+                  <IconButton onClick={() => setMostraSenha(!mostraSenha)}>
+                    <SvgIcon component={!mostraSenha ? Visibility : VisibilityOff} />
+                  </IconButton>
+                }
                 name="senha"
-                type="password"
+                type={mostraSenha ? 'text' : 'password'}
                 placeholder="Senha de rede"
                 title="Senha de rede"
                 onChange={(e) => setSenha(e.target.value)}

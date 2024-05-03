@@ -20,6 +20,7 @@ export interface IOrdem {
     sala: string;
     solicitante_id: string;
     solicitante?: IUsuario;
+    tratar_com?: string;
     data_solicitacao: Date;
     tipo: number;
     status: number;
@@ -76,7 +77,7 @@ async function buscarPorId(id: string): Promise<IOrdem> {
     return usuario;
 }
 
-async function criar(ordemDto: { unidade_id: string, andar: number, sala: string, tipo: number, observacoes: string, telefone: string }): Promise<IOrdem> {
+async function criar(ordemDto: { unidade_id: string, andar: number, sala: string, tipo: number, observacoes: string, telefone: string, tratar_com?: string }): Promise<IOrdem> {
     const session = await getServerSession(authOptions);
     const novaUnidade = await fetch(`${baseURL}ordens/criar`, {
         method: "POST",

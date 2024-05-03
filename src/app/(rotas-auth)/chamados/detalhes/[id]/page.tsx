@@ -32,6 +32,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [prioridade, setPrioridade] = useState<number>(1);
     const [sala, setSala] = useState('');
     const [observacoes, setObservacoes] = useState('');
+    const [tratar_com, setTratar_com] = useState('');
     const [telefone, setTelefone] = useState('');
     const [salaError, setSalaError] = useState('');
     const [observacoesError, setObservacoesError] = useState('');
@@ -74,6 +75,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                 setObservacoes(ordem.observacoes);
                 setPrioridade(ordem.prioridade);
                 setServicos(ordem.servicos);
+                ordem.tratar_com && setTratar_com(ordem.tratar_com);
             });
         unidadeServices.listaCompleta()
             .then((response: IUnidade[]) => {
@@ -171,7 +173,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                 setTipoError('É obrigatório informar o tipo');
                 erros++;
             }
-            if (!tipo){
+            if (telefone === ''){
                 setTelefoneError('É obrigatório informar o telefone');
                 erros++;
             }
@@ -190,7 +192,8 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     sala,
                     tipo,
                     observacoes,
-                    telefone
+                    telefone,
+                    tratar_com
                 }).then((ordem: IOrdem) => {
                     if (!ordem) setAlert('Erro', 'Erro ao criar chamado!', 'danger', 3000, Cancel);
                     if (ordem) router.push('/chamados?criado=1');
@@ -206,14 +209,12 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     }
     function formatarTelefone(value: string): string {
         if (!value) return value;
-        const onlyNumbers = value.replace(/\D/g, '').substring(0, 11);
-        if (onlyNumbers.length <= 2)
-            return onlyNumbers.replace(/(\d{0,2})/, '($1');
-        if (onlyNumbers.length <= 6)
-            return onlyNumbers.replace(/(\d{0,2})(\d{0,4})/, '($1) $2');
-        if (onlyNumbers.length <= 10)
-            return onlyNumbers.replace(/(\d{0,2})(\d{0,4})(\d{0,4})/, '($1) $2-$3');
-        return onlyNumbers.replace(/(\d{0,2})(\d{0,5})(\d{0,4})/, '($1) $2-$3');
+        const onlyNumbers = value.replace(/\D/g, '').substring(0, 9);
+        if (onlyNumbers.length <= 4)
+            return onlyNumbers.replace(/(\d{0,4})/, '$1');
+        if (onlyNumbers.length <= 8)
+            return onlyNumbers.replace(/(\d{0,4})(\d{0,4})/, '$1-$2');
+        return onlyNumbers.replace(/(\d{0,5})(\d{0,4})/, '$1-$2');
     }
 
     return (<>
@@ -573,7 +574,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                     </> : null}
                                     <Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
-                                            <FormLabel>Unidade</FormLabel>
+                                            <FormLabel>Unidade *</FormLabel>
                                             {!ordem ? <Autocomplete
                                                 autoFocus
                                                 options={unidades}
@@ -600,7 +601,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <FormHelperText sx={{ color: 'danger.500' }}>{unidade_idError}</FormHelperText>
                                         </FormControl>
                                         <FormControl>
-                                            <FormLabel>Andar</FormLabel>
+                                            <FormLabel>Andar *</FormLabel>
                                             <Select
                                                 size="sm"
                                                 value={andar}
@@ -622,7 +623,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <FormHelperText sx={{ color: 'danger.500' }}>{andarError}</FormHelperText>
                                         </FormControl>
                                         <FormControl>
-                                            <FormLabel>Sala</FormLabel>
+                                            <FormLabel>Sala *</FormLabel>
                                             <Input
                                                 size="sm"
                                                 type="text"
@@ -640,7 +641,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                     <Divider />
                                     <Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
-                                            <FormLabel>Telefone</FormLabel>
+                                            <FormLabel>Telefone *</FormLabel>
                                             <Input
                                                 size="sm"
                                                 type="text"
@@ -657,7 +658,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <FormHelperText sx={{ color: 'danger.500' }}>{telefoneError}</FormHelperText>
                                         </FormControl>
                                         <FormControl sx={{ flexGrow: 1 }}>
-                                            <FormLabel>Tipo</FormLabel>
+                                            <FormLabel>Tipo *</FormLabel>
                                             <Select
                                                 size="sm"
                                                 value={tipo}
@@ -679,7 +680,23 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                     <Divider />
                                     <Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
-                                            <FormLabel>Descricão do problema</FormLabel>
+                                            <FormLabel>Tratar com</FormLabel>
+                                            <Input
+                                                size="sm"
+                                                type="text"
+                                                placeholder="Responsável que irá receber o técnico na unidade"
+                                                value={tratar_com}
+                                                onChange={(event) => {
+                                                    setTratar_com(event.target.value && event.target.value)
+                                                }}
+                                                disabled={id ? true : false}
+                                            />
+                                        </FormControl>
+                                    </Stack>
+                                    <Divider />
+                                    <Stack direction="row" spacing={2}>
+                                        <FormControl sx={{ flexGrow: 1 }}>
+                                            <FormLabel>Descricão do problema *</FormLabel>
                                             <Textarea
                                                 minRows={5}
                                                 maxRows={10} 

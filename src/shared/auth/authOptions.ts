@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
           login: { label: "Login", type: "text" },
           senha: {  label: "Senha", type: "password" }
         },
-        async authorize(credentials, req) {
+        async authorize(credentials, _) {
           if (credentials?.login && credentials?.senha){
             const { login, senha } = credentials;
             const response = await fetch(`${process.env.API_URL}login`, {
@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ login, senha })
             });
-            const usuario = response.json();
+            const usuario = await response.json();
             if (usuario && response.ok) return usuario;
           }
           return null;

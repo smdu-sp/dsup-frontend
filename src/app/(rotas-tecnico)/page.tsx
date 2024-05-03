@@ -40,7 +40,7 @@ export default function SearchHome() {
         <Button component='a' color='success' href='/chamados/detalhes' startDecorator={<Add />}>Novo Chamado</Button>
       </Box>}
     >
-      <Typography>Atualizado em: {atualizado_em.toLocaleTimeString()}</Typography>
+      <Typography sx={{ fontSize: '1.5rem' }}>Atualizado em: {atualizado_em.toLocaleTimeString()}</Typography>
       <Box
         sx={{
           display: 'flex',
