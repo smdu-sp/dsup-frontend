@@ -46,6 +46,7 @@ function SearchChamados() {
   const [tecnico_id, setTecnico_id] = useState('');
   const [prioridade, setPrioridade] = useState(1);
   const [tecnicos, setTecnicos] = useState<IUsuario[]>([]);
+  const [usuario, setUsuario] = useState<IUsuario>();
 
   const confirmaVazio: {
     aberto: boolean,
@@ -115,6 +116,9 @@ function SearchChamados() {
   }
 
   useEffect(() => {
+    usuarioServices.validaUsuario().then((response: IUsuario) => {
+      setUsuario(response);
+    })
     atualizaDados();
   }, [])
 
@@ -369,7 +373,7 @@ function SearchChamados() {
           <tr>
             <th>#</th>
             <th>Status</th>
-            <th>Prioridade</th>
+            {usuario?.permissao !== 'USR' && <th>Prioridade</th>}
             <th>Data</th>
             <th>Técnico</th>
             <th>Solicitante</th>
@@ -384,7 +388,7 @@ function SearchChamados() {
               <tr key={ordem.id} style={{ cursor: 'pointer' }}>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.id ? ordem.id : '-'}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.status ? statusChip[ordem.status].label : '-'}</td>
-                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? prioridades[ordem.prioridade].label : '-'}</Chip></td>
+                {usuario?.permissao === 'USR' ? null : <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip variant='solid' color={prioridades[ordem.prioridade].color} title={prioridades[ordem.prioridade].label}>{ordem.id ? prioridades[ordem.prioridade].label : '-'}</Chip></td>}
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')} - {new Date(ordem.data_solicitacao).toLocaleTimeString('pt-BR')}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.servicos[0]?.tecnico ? abreviaNome(ordem.servicos[0]?.tecnico?.nome) : '-'}</td>
                 <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.solicitante ? abreviaNome(ordem.solicitante.nome) : '-'}</td>

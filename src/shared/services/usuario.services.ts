@@ -167,6 +167,7 @@ async function validaUsuario(): Promise<IUsuario> {
         }
     }).then((response) => {
         if (response.status === 401) Logout();
+        if (response.status !== 200) Logout();
         return response.json();
     })
     return usuario;

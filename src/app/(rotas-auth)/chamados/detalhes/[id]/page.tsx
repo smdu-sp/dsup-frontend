@@ -543,14 +543,13 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 : 'Chamado novo' }
                         </TimelineOppositeContent>
                         <TimelineSeparator>
-                            <TimelineDot color='info' sx={{ p: 0}}>
-                                <PlayArrow sx={{ fontSize: 10 }} />
+                            <TimelineDot color='info' sx={{ p: 0 }}>
+                                <Handyman sx={{ fontSize: 10 }} />
                             </TimelineDot>
                             <TimelineConnector />
                         </TimelineSeparator>
                         <TimelineContent>
                             <Card sx={{ width: '100%' }}>
-                                <Stack spacing={2}>
                                     {ordem && usuario?.permissao !== 'USR' ?
                                     <><Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
@@ -622,7 +621,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             </Select>
                                             <FormHelperText sx={{ color: 'danger.500' }}>{andarError}</FormHelperText>
                                         </FormControl>
-                                        <FormControl>
+                                        <FormControl sx={{ flexGrow: 1 }}>
                                             <FormLabel>Sala *</FormLabel>
                                             <Input
                                                 size="sm"
@@ -711,7 +710,6 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <FormHelperText sx={{ color: 'danger.500' }}>{observacoesError}</FormHelperText>
                                         </FormControl>
                                     </Stack>
-                                </Stack>
                                 {!ordem || (['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || 'USR') && [1, 2, 5].includes(ordem?.status || 1)) ? 
                                 <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
                                     <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
