@@ -351,7 +351,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                             if (index === 0 && servicoAtualStatus === 4)
                                                                 setServicoAtualObservacao(event.target.value);
                                                         }}
-                                                        disabled={index !== 0}
+                                                        disabled={index !== 0 || (servico.status === 4 || servico.status === 3)}
                                                     />
                                                 </FormControl>
                                             </Stack>
