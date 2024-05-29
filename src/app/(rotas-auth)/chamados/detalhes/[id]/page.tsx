@@ -337,7 +337,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <Divider/>
                                             <Stack direction="row" spacing={2}>
                                                 <FormControl sx={{ flexGrow: 1 }}>
-                                                    <FormLabel>{servico.status === 4 ? 'Motivo da não solução' : 'Observações'}</FormLabel>
+                                                    <FormLabel>{servicoAtualStatus === 4 ? 'Motivo da não solução' : 'Observações'}</FormLabel>
                                                     <Textarea
                                                         minRows={3}
                                                         maxRows={5} 
@@ -477,7 +477,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                         <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
                                             <Stack spacing={2}>
                                                 <FormLabel>Materiais utilizados</FormLabel>
-                                                <List component={Card} variant="outlined">
+                                                <List component={Card} variant="outlined" sx={{ borderRadius: 8, p: 1 }}>
                                                     {servico.materiais.map((material: IMaterial, index: number) => (
                                                         <ListItem key={material.id}
                                                             endAction={
