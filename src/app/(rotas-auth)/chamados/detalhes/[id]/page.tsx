@@ -337,7 +337,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             <Divider/>
                                             <Stack direction="row" spacing={2}>
                                                 <FormControl sx={{ flexGrow: 1 }}>
-                                                    <FormLabel>{servicoAtualStatus === 4 ? 'Motivo da não solução' : 'Observações'}</FormLabel>
+                                                    <FormLabel>{servicoAtualStatus === 4 ? 'Motivo' : 'Observações'}</FormLabel>
                                                     <Textarea
                                                         minRows={3}
                                                         maxRows={5} 
