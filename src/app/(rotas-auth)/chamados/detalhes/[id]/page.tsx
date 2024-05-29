@@ -476,8 +476,8 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                     {servico.materiais && servico.materiais.length > 0 ? 
                                         <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
                                             <Stack spacing={2}>
-                                                <FormLabel>Descrição</FormLabel>
-                                                <List>
+                                                <FormLabel>Materiais utilizados</FormLabel>
+                                                <List component={Card} variant="outlined">
                                                     {servico.materiais.map((material: IMaterial, index: number) => (
                                                         <ListItem key={material.id}
                                                             endAction={
