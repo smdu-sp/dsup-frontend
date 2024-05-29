@@ -334,23 +334,27 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                     </Select>
                                                 </FormControl>
                                             </Stack>
-                                            {servico.status === 4 || (index === 0 && servicoAtualStatus === 4) ?<><Divider/>
+                                            <Divider/>
                                             <Stack direction="row" spacing={2}>
                                                 <FormControl sx={{ flexGrow: 1 }}>
-                                                    <FormLabel>Motivo</FormLabel>
+                                                    <FormLabel>{servico.status === 4 ? 'Motivo da não solução' : 'Observações'}</FormLabel>
                                                     <Textarea
                                                         minRows={3}
                                                         maxRows={5} 
-                                                        placeholder="Descreva de maneira sucinta o motivo da não solução do problema"
+                                                        placeholder={
+                                                            servicoAtualStatus === 4 ? 
+                                                            'Descreva de maneira sucinta o motivo da não solução do problema' :
+                                                            'Observação sobre a solução do problema (elogios, sugestões, etc.)'
+                                                        }
                                                         value={index === 0 && servico.status !== 4 ? servicoAtualObservacao : servico.observacao}
                                                         onChange={(event) => {
                                                             if (index === 0 && servicoAtualStatus === 4)
                                                                 setServicoAtualObservacao(event.target.value);
                                                         }}
-                                                        disabled={index !== 0 || servicoAtualStatus !== 4}
+                                                        disabled={index !== 0}
                                                     />
                                                 </FormControl>
-                                            </Stack></> : null }
+                                            </Stack>
                                             { servico.status === 2 ? 
                                                 <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
                                                     <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
@@ -472,6 +476,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                     {servico.materiais && servico.materiais.length > 0 ? 
                                         <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
                                             <Stack spacing={2}>
+                                                <FormLabel>Descrição</FormLabel>
                                                 <List>
                                                     {servico.materiais.map((material: IMaterial, index: number) => (
                                                         <ListItem key={material.id}
