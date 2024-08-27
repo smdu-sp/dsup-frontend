@@ -194,9 +194,10 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     observacoes,
                     telefone,
                     tratar_com
-                }).then((ordem: IOrdem) => {
-                    if (!ordem) setAlert('Erro', 'Erro ao criar chamado!', 'danger', 3000, Cancel);
-                    if (ordem) router.push('/chamados?criado=1');
+                }).then((ordem: IOrdem | { error: string }) => {
+                    if ('error' in ordem) {
+                        setAlert('Erro', ordem.error, 'danger', 3000, Cancel);
+                    } else if (ordem) router.push('/chamados?criado=1');
                 });
         } else {
             ordemServices.atualizar(id, {

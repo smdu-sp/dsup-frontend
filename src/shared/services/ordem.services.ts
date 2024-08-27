@@ -88,6 +88,10 @@ async function criar(ordemDto: { unidade_id: string, andar: number, sala: string
         body: JSON.stringify(ordemDto)
     }).then(async (response) => {
         if (response.status === 401) await Logout();
+        if (response.status === 403) {
+            const erroAvaliacao = await response.json();
+            return { error: erroAvaliacao.message };
+        }
         if (response.status !== 201) return;
         return response.json();
     });
