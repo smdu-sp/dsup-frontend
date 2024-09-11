@@ -347,9 +347,9 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                             'Descreva de maneira sucinta o motivo da não solução do problema' :
                                                             'Observação sobre a solução do problema (elogios, sugestões, etc.)'
                                                         }
-                                                        value={index === 0 && servico.status !== 4 ? servicoAtualObservacao : servico.observacao}
+                                                        value={index === 0 && (servico.status !== 4 && servico.status !== 3) ? servicoAtualObservacao : servico.observacao}
                                                         onChange={(event) => {
-                                                            if (index === 0 && servicoAtualStatus === 4)
+                                                            if (index === 0 && (servicoAtualStatus === 4 || servicoAtualStatus === 3))
                                                                 setServicoAtualObservacao(event.target.value);
                                                         }}
                                                         disabled={index !== 0 || (servico.status === 4 || servico.status === 3)}
