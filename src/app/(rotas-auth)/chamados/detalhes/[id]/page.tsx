@@ -66,6 +66,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     function atualizaDados() {
         if (id) ordemServices.buscarPorId(id)
             .then((ordem: IOrdem) => {
+                if (!ordem || !ordem.id) router.push('/chamados');
                 setOrdem(ordem);
                 setUnidade_id(ordem.unidade_id);
                 setAndar(ordem.andar);

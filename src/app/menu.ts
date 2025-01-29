@@ -1,4 +1,4 @@
-import { Business, Handyman, Home, Person } from '@mui/icons-material';
+import { Business, FileDownload, FileOpen, Handyman, Home, Person, Report } from '@mui/icons-material';
 
 export interface IMenuOption {
     title:  string;
@@ -43,6 +43,12 @@ export const menu: IMenu = {
             href: '/unidades',
             name: 'unidades',
             icon: Business,
-        }           
+        },
+        {
+            title: 'Relatórios',
+            href: '/relatorios',
+            name: 'relatorios',
+            icon: FileOpen,
+        }
     ]
 }
