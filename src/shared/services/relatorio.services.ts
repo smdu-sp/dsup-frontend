@@ -21,6 +21,7 @@ export interface IChamadoPeriodoAno {
     'Técnico Responsável': string;
     'Data de Abertura': string;
     'Data de Encerramento': string;
+    '': string;
 }
 
 async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: number = 2024): Promise<IChamadoPeriodoAno[]> {

@@ -23,7 +23,7 @@ function BuscaRelatorios(){
   const [ relatorio, setRelatorio ] = useState<string>("");
   const [ ano_inicio, setAnoInicio ] = useState<number>(2024);
   const [ ano_fim, setAnoFim ] = useState<number>(2024);
-  const [ dataRelatorio, setDataRelatorio] = useState<any[]>([]);
+  const [ dataRelatorio, setDataRelatorio] = useState<any[][]>([]);
   const [ anos, setAnos ] = useState<number[]>([]);
   const [ totalPorTipo, setTotalPorTipo ] = useState<Record<string, number>>(); 
 
@@ -47,11 +47,11 @@ function BuscaRelatorios(){
             }
           });
           setTotalPorTipo(totalPorTipo);
-          response[0] = {
-            ...response[0],
-            ...totalPorTipo
-          }
-          setDataRelatorio(response);
+          const dataRelatorio = [];
+          dataRelatorio.push([totalPorTipo]);
+          dataRelatorio.push(response);
+          setDataRelatorio(dataRelatorio);
+
         })
     }
   }, [relatorio, ano_inicio, ano_fim]);
@@ -68,9 +68,15 @@ function BuscaRelatorios(){
   }
   
   function downloadXlsx(){
-    const ws = xlsx.utils.json_to_sheet(dataRelatorio);
+    if (dataRelatorio.length === 0) return;
     const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, "Relatório");
+    var relatorios = 1;
+    for (const tabela of dataRelatorio){
+      if (tabela.length === 0) return;
+      const ws = xlsx.utils.json_to_sheet(tabela);
+      xlsx.utils.book_append_sheet(wb, ws, `Relatório_${relatorios}`);
+      relatorios++;
+    }
     xlsx.writeFile(wb, `${new Date().toLocaleDateString()}_${relatorio}_${ano_inicio}_${ano_fim}.xlsx`);
   }
   
@@ -157,20 +163,22 @@ function BuscaRelatorios(){
           <Box sx={{ display: dataRelatorio.length === 0 ? 'flex' : 'none', gap: 1.5, alignItems: 'center' }}>
           </Box>
         )}
-        <Table hoverRow sx={{ tableLayout: 'auto' }} id="table-relatorio">
-          <thead>
-            <tr>
-              {dataRelatorio.length > 0 && Object.keys(dataRelatorio[0]).map((key) => <th key={key}>{key}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {dataRelatorio.map((row, index) => (
-              <tr key={index}>
-                {Object.values(row).map((value, index) => <td key={index}>{value as React.ReactNode}</td>)}
+        {dataRelatorio.length > 0 && dataRelatorio.map((tabela, index) => (
+          <Table key={index} hoverRow sx={{ tableLayout: 'auto' }} id="table-relatorio">
+            <thead>
+              <tr>
+                {tabela.length > 0 && Object.keys(tabela[0]).map((key) => <th key={key}>{key}</th>)}
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {tabela.map((row, index) => (
+                <tr key={index}>
+                  {Object.values(row).map((value, index) => <td key={index}>{value as React.ReactNode}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ))}
       </div>
     </Content>
   </>
