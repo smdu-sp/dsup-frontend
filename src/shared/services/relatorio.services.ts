@@ -11,7 +11,19 @@ async function Logout() {
 
 const baseURL = process.env.API_URL || 'http://localhost:3000/';
 
-async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: number = 2024) {
+export interface IChamadoPeriodoAno {
+    '#': string;
+    Prioridade: string;
+    Tipo: string;
+    Status: string;
+    Unidade: string;
+    Solicitante: string;
+    'Técnico Responsável': string;
+    'Data de Abertura': string;
+    'Data de Encerramento': string;
+}
+
+async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: number = 2024): Promise<IChamadoPeriodoAno[]> {
     const session = await getServerSession(authOptions);
     const relatorio = await fetch(`${baseURL}relatorios/listar-chamados-periodo-ano/${ano_inicio}/${ano_fim}`, {
         method: "GET",

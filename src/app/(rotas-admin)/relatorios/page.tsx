@@ -17,13 +17,15 @@ export default function Relatorios(){
 }
 
 function BuscaRelatorios(){
+  const tableRef = useRef<HTMLDivElement>(null);
+  const tipos = ['', 'Elétrica', 'Hidráulica', 'Telefonia', 'Outros']
+
   const [ relatorio, setRelatorio ] = useState<string>("");
   const [ ano_inicio, setAnoInicio ] = useState<number>(2024);
   const [ ano_fim, setAnoFim ] = useState<number>(2024);
   const [ dataRelatorio, setDataRelatorio] = useState<any[]>([]);
-  const tableRef = useRef<HTMLDivElement>(null);
-
   const [ anos, setAnos ] = useState<number[]>([]);
+  const [ totalPorTipo, setTotalPorTipo ] = useState<Record<string, number>>(); 
 
   useEffect(() => {
     let anos = [];
@@ -37,10 +39,20 @@ function BuscaRelatorios(){
     switch(relatorio){
       case "listarChamadosPeriodoAno":
         relatorioServices.listarChamadosPeriodoAno(ano_inicio, ano_fim)
-        .then((response) => {
+        .then((response: relatorioServices.IChamadoPeriodoAno[]) => {
+          const totalPorTipo: Record<string, number> = { 'Hidráulica': 0, 'Elétrica': 0, 'Telefonia': 0, 'Outros': 0 };
+          response.forEach((row: relatorioServices.IChamadoPeriodoAno) => {
+            if (row.Tipo && totalPorTipo.hasOwnProperty(row.Tipo)) {
+              totalPorTipo[row.Tipo] += 1;
+            }
+          });
+          setTotalPorTipo(totalPorTipo);
+          response[0] = {
+            ...response[0],
+            ...totalPorTipo
+          }
           setDataRelatorio(response);
         })
-        break;
     }
   }, [relatorio, ano_inicio, ano_fim]);
 
@@ -141,6 +153,10 @@ function BuscaRelatorios(){
         <IconButton title="Baixar pdf" size="sm" color='danger' sx={{ display: dataRelatorio.length > 0 ? 'flex' : 'none' }} onClick={() => { downloadArquivo("pdf") }}><FaRegFilePdf size={24} /></IconButton>
       </Box>
       <div ref={tableRef}>
+        { (relatorio === "listarChamadosPeriodoAno") && (
+          <Box sx={{ display: dataRelatorio.length === 0 ? 'flex' : 'none', gap: 1.5, alignItems: 'center' }}>
+          </Box>
+        )}
         <Table hoverRow sx={{ tableLayout: 'auto' }} id="table-relatorio">
           <thead>
             <tr>
