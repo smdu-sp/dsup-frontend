@@ -184,7 +184,6 @@ function SearchChamados() {
       setAlert('Erro!', 'Não foi possível atribuir o chamado!', 'danger', 3000, Error);
       setAtribuindoChamado(false);
     })
-    setAtribuindoChamado(false);
   }
 
   const limpaFitros = () => {
