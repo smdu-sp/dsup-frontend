@@ -3,7 +3,7 @@
 import Content from '@/components/Content';
 import { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import { Autocomplete, AutocompleteOption, Box, Button, Chip, ChipPropsColorOverrides, ColorPaletteProp, DialogTitle, FormControl, FormLabel, IconButton, Modal, ModalDialog, Option, Select, Snackbar, Stack, Table, Tooltip, Typography, useTheme } from '@mui/joy';
-import { Build, Check, Clear, Edit, Refresh } from '@mui/icons-material';
+import { Build, Check, Clear, Edit, Error, Refresh } from '@mui/icons-material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertsContext } from '@/providers/alertsProvider';
 import { TablePagination } from '@mui/material';
@@ -47,6 +47,7 @@ function SearchChamados() {
   const [prioridade, setPrioridade] = useState(1);
   const [tecnicos, setTecnicos] = useState<IUsuario[]>([]);
   const [usuario, setUsuario] = useState<IUsuario>();
+  const [atribuindoChamado, setAtribuindoChamado] = useState(false);
 
   const confirmaVazio: {
     aberto: boolean,
@@ -168,13 +169,22 @@ function SearchChamados() {
   }
 
   function atribuirChamado(){
+    setAtribuindoChamado(true);
     servicoServices.criar({ ordem_id, prioridade, tecnico_id }).then((response: IServico) => {
       if (response.id) {
         setAlert('Chamado atribuído!', 'Chamado atribuído com sucesso!', 'success', 3000, Check);
         setAtribuirChamadoModal(false);
         router.push('/chamados/detalhes/' + ordem_id);
+        setAtribuindoChamado(false);
+      } else {
+        setAlert('Erro!', 'Não foi possível atribuir o chamado!', 'danger', 3000, Error);
+        setAtribuirChamadoModal(false);
       }
+    }).catch((err) => {
+      setAlert('Erro!', 'Não foi possível atribuir o chamado!', 'danger', 3000, Error);
+      setAtribuindoChamado(false);
     })
+    setAtribuindoChamado(false);
   }
 
   const limpaFitros = () => {
@@ -216,7 +226,7 @@ function SearchChamados() {
                         <Option value={4}>Urgente</Option>
                     </Select>
                 </FormControl>
-                <Button color="success" onClick={() => atribuirChamado()}>
+                <Button color="success" onClick={() => atribuirChamado()} loading={atribuindoChamado}>
                   {['DEV', 'ADM'].includes(logado?.permissao || '') ? 'Atribuir' : 'Assumir'} chamado
                 </Button>
             </Stack>
