@@ -54,6 +54,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [quantidadeMaterial, setQuantidadeMaterial] = useState(0);
     const [medidaMaterial, setMedidaMaterial] = useState('un');
     const [adicionaMaterialServico, setAdicionaMaterialServico] = useState('');
+    const [isAtic, setIsAtic] = useState(false);
 
     const statusChip: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
       { label: '', color: 'neutral' },
@@ -80,10 +81,15 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
             });
         unidadeServices.listaCompleta()
             .then((response: IUnidade[]) => {
-                setUnidades(response);
+                let unis = response;
+                setUnidades(unis);
             })
         usuarioServices.validaUsuario().then((response: IUsuario) => {
             setUsuario(response);
+            const sigla = response.unidade?.sigla || '';
+            console.log({sigla});
+            setIsAtic(sigla == "ATIC");
+            console.log({isAtic});
         })
     }
 
@@ -300,7 +306,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                         },
                     }}
                 >
-                    { servicos ? servicos.map((servico: IServico, index: number) => (
+                    {servicos ? servicos.map((servico: IServico, index: number) => (
                         <>
                         {servico.status === 1 || servico.status === 5 ? null : 
                             <TimelineItem key={index}>
