@@ -1,6 +1,7 @@
 "use client"
 import { ArrowBack } from '@mui/icons-material';
 import { Button, Card, CardContent, Sheet, Typography } from '@mui/joy';
+import Link from 'next/link';
 import React from 'react';
 
 export default function NotFound () {
@@ -36,7 +37,7 @@ export default function NotFound () {
                     </Typography>
                 </CardContent>
             </Card>
-            <a href="/">
+            <Link href="/">
                 <Button
                     startDecorator={<ArrowBack />}
                     variant="plain"
@@ -47,7 +48,7 @@ export default function NotFound () {
                         }
                     }}
                 >Retornar ao início</Button>
-            </a>
+            </Link>
         </Sheet>
     );
 }

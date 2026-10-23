@@ -1,7 +1,7 @@
 'use client'
 
 import Content from "@/components/Content";
-import { useContext, useEffect, useState } from "react";
+import { use, useContext, useEffect, useState } from "react";
 import * as unidadeServices from "@/shared/services/unidade.services";
 import { Box, Button, Card, CardActions, CardOverflow, Divider, FormControl, FormLabel, Input, Option, Select, Stack } from "@mui/joy";
 import { Abc, Business, Check, Tag } from "@mui/icons-material";
@@ -9,24 +9,24 @@ import { useRouter } from 'next/navigation';
 import { IUnidade } from "@/shared/services/unidade.services";
 import { AlertsContext } from "@/providers/alertsProvider";
 
-export default function UnidadeDetalhes(props: { params: { id: string } }) {
+export default function UnidadeDetalhes(props: { params: Promise<{ id: string }> }) {
     const [idUnidade, setIdUnidade] = useState<string>('');
     const [status, setStatus] = useState<string>('true');
     const [nome, setNome] = useState<string>('');
     const [sigla, setSigla] = useState<string>('');
     const [codigo, setCodigo] = useState<string>('');
-    const { id } = props.params;
+    const { id } = use(props.params);
     const { setAlert } = useContext(AlertsContext);
     const router = useRouter();
 
     const submitForm = async () => {
         if (!id){
-            const criado: IUnidade = await unidadeServices.criar({
+            const criado: IUnidade | undefined = await unidadeServices.criar({
                 nome, codigo, sigla, status
             });
             if (criado) router.push('/unidades/detalhes/' + criado.id);
         } else {
-            const alterado: IUnidade = await unidadeServices.atualizar({
+            const alterado: IUnidade | undefined = await unidadeServices.atualizar({
                 id, nome, codigo, sigla, status
             });
             if (alterado) setAlert('Unidade alterada!', 'Unidade alterada com sucesso!', 'success', 3000, Check);
@@ -36,7 +36,8 @@ export default function UnidadeDetalhes(props: { params: { id: string } }) {
     useEffect(() => {
         if (id) {
             unidadeServices.buscarPorId(id)
-                .then((response: IUnidade) => {
+                .then((response: IUnidade | undefined) => {
+                    if (!response) return;
                     setIdUnidade(response.id);
                     setNome(response.nome);
                     setSigla(response.sigla);

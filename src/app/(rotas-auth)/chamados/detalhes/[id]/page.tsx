@@ -1,10 +1,10 @@
 'use client'
 
 import Content from "@/components/Content";
-import { Add, Cancel, Check, Close, Handyman, Pause, PlayArrow, Timer } from "@mui/icons-material";
+import { Add, Cancel, Check, Close, Edit, Handyman, Pause, PlayArrow, Timer } from "@mui/icons-material";
 import { Autocomplete, Box, Button, Card, CardActions, CardOverflow, Chip, Divider, FormControl, FormLabel, Input, Select, Stack, Option, Textarea, Typography, FormHelperText, ColorPaletteProp, ModalDialog, DialogTitle, DialogContent, ListItem, List, IconButton, ListItemButton, AutocompleteOption } from "@mui/joy";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { Fragment, use, useCallback, useContext, useEffect, useState } from "react";
 import * as servicoServices from "@/shared/services/servico.services";
 import * as ordemServices from "@/shared/services/ordem.services";
 import * as unidadeServices from "@/shared/services/unidade.services";
@@ -20,10 +20,10 @@ import { OverridableStringUnion } from '@mui/types';
 import { TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@mui/lab";
 import { timelineOppositeContentClasses } from '@mui/lab/TimelineOppositeContent';
 
-export default function ChamadoDetalhes(props: { params: { id: string } }) {
+export default function ChamadoDetalhes(props: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { setAlert } = useContext(AlertsContext);
-    const { id } = props.params;
+    const { id } = use(props.params);
     const [ordem, setOrdem] = useState<IOrdem>();
     const [unidade_id, setUnidade_id] = useState('');
     const [unidades, setUnidades] = useState<IUnidade[]>([]);
@@ -55,6 +55,9 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
     const [medidaMaterial, setMedidaMaterial] = useState('un');
     const [adicionaMaterialServico, setAdicionaMaterialServico] = useState('');
     const [isAtic, setIsAtic] = useState(false);
+    const [tecnicos, setTecnicos] = useState<IUsuario[]>([]);
+    const [alterandoTecnicoServico, setAlterandoTecnicoServico] = useState('');
+    const [novoTecnicoId, setNovoTecnicoId] = useState('');
 
     const statusChip: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
       { label: '', color: 'neutral' },
@@ -64,7 +67,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
       { label: 'Concluído', color: 'success' },
     ]
 
-    function atualizaDados() {
+    const atualizaDados = useCallback(() => {
         if (id) ordemServices.buscarPorId(id)
             .then((ordem: IOrdem) => {
                 if (!ordem || !ordem.id) router.push('/chamados');
@@ -87,15 +90,29 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
         usuarioServices.validaUsuario().then((response: IUsuario) => {
             setUsuario(response);
             const sigla = response.unidade?.sigla || '';
-            console.log({sigla});
             setIsAtic(sigla == "ATIC");
-            console.log({isAtic});
+        })
+        usuarioServices.listaCompleta()
+            .then((response: IUsuario[]) => {
+                if (response && response.length > 0)
+                    setTecnicos(response.filter((usuario: IUsuario) => usuario.permissao === 'TEC' && usuario.status === 1));
+            })
+    }, [id, router]);
+
+    function handleAlterarTecnico(servico_id: string) {
+        servicoServices.alterarTecnico(servico_id, { tecnico_id: novoTecnicoId }).then((response: IServico) => {
+            if (response && response.tecnico_id === novoTecnicoId) {
+                setAlert('Técnico responsável alterado com sucesso!', 'Sucesso', 'success', 3000, Check);
+                setAlterandoTecnicoServico('');
+                setNovoTecnicoId('');
+                atualizaDados();
+            }
         })
     }
 
     useEffect(() => {
         atualizaDados();
-    }, [ id ]);
+    }, [ atualizaDados ]);
 
     function handleFinalizar(servico_id: string) {
         servicoServices.finalizarServico(servico_id).then((response: IServico) => {
@@ -307,9 +324,9 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                     }}
                 >
                     {servicos ? servicos.map((servico: IServico, index: number) => (
-                        <>
-                        {servico.status === 1 || servico.status === 5 ? null : 
-                            <TimelineItem key={index}>
+                        <Fragment key={servico.id}>
+                        {servico.status === 1 || servico.status === 5 ? null :
+                            <TimelineItem key={`${servico.id}-avaliacao`}>
                                 <TimelineOppositeContent>
                                     { servico.avaliado_em ? 
                                         `${new Date(servico.avaliado_em).toLocaleDateString('pt-BR')} - ${new Date(servico.avaliado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
@@ -354,7 +371,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                             'Descreva de maneira sucinta o motivo da não solução do problema' :
                                                             'Observação sobre a solução do problema (elogios, sugestões, etc.)'
                                                         }
-                                                        value={index === 0 && (servico.status !== 4 && servico.status !== 3) ? servicoAtualObservacao : servico.observacao}
+                                                        value={index === 0 && (servico.status !== 4 && servico.status !== 3) ? servicoAtualObservacao : (servico.observacao ?? '')}
                                                         onChange={(event) => {
                                                             if (index === 0 && (servicoAtualStatus === 4 || servicoAtualStatus === 3))
                                                                 setServicoAtualObservacao(event.target.value);
@@ -377,10 +394,10 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </TimelineContent>
                             </TimelineItem>
                         }
-                        { servico.status !== 1 && servico.status !== 5 ? 
-                            <TimelineItem key={index}>
+                        { servico.status !== 1 && servico.status !== 5 ?
+                            <TimelineItem key={`${servico.id}-concluido`}>
                                 <TimelineOppositeContent>
-                                    { servico.data_fim ? 
+                                    { servico.data_fim ?
                                         `${new Date(servico.data_fim).toLocaleDateString('pt-BR')} - ${new Date(servico.data_fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` 
                                     : '' }
                                 </TimelineOppositeContent>
@@ -399,9 +416,9 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                             </TimelineItem>
                         : null}
                         {!servico.suspensoes ? null :
-                            servico.suspensoes.map((suspensao: ISuspensao, index: number) => (<>
-                                {suspensao.status ? null : 
-                                    <TimelineItem key={servico.id + 'fim'}>
+                            servico.suspensoes.map((suspensao: ISuspensao, index: number) => (<Fragment key={suspensao.id}>
+                                {suspensao.status ? null :
+                                    <TimelineItem key={`${suspensao.id}-fim`}>
                                         <TimelineOppositeContent>
                                             {new Date(suspensao.termino).toLocaleDateString('pt-BR')} - {new Date(suspensao.termino).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                         </TimelineOppositeContent>
@@ -418,7 +435,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                         </TimelineContent>
                                     </TimelineItem>
                                 }
-                                <TimelineItem key={servico.id + 'fim'}>
+                                <TimelineItem key={`${suspensao.id}-inicio`}>
                                     <TimelineOppositeContent>
                                         {new Date(suspensao.inicio).toLocaleDateString('pt-BR')} - {new Date(suspensao.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                     </TimelineOppositeContent>
@@ -435,7 +452,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                         </Card>
                                     </TimelineContent>
                                 </TimelineItem>
-                            </>))
+                            </Fragment>))
                         }
                         <TimelineItem key={servico.id}>
                             <TimelineOppositeContent>
@@ -455,10 +472,42 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                         <Stack direction="row" spacing={2}>
                                             <FormControl sx={{ flexGrow: 1 }}>
                                                 <FormLabel>Técnico</FormLabel>
-                                                <Input value={servico.tecnico?.nome} disabled />
+                                                {['DEV', 'ADM'].includes(usuario?.permissao || '') && (servico.status === 1 || servico.status === 5) ?
+                                                    (alterandoTecnicoServico === servico.id ? <Box sx={{ display: 'flex', gap: 1 }}>
+                                                        <Select
+                                                            sx={{ flexGrow: 1 }}
+                                                            value={novoTecnicoId}
+                                                            onChange={(_, value) => setNovoTecnicoId(value || '')}
+                                                        >
+                                                            {tecnicos.map((tecnico) => (
+                                                                <Option key={tecnico.id} value={tecnico.id}>{tecnico.nome}</Option>
+                                                            ))}
+                                                        </Select>
+                                                        <IconButton size="sm" color="success" variant="soft" disabled={!novoTecnicoId || novoTecnicoId === servico.tecnico_id} onClick={() => handleAlterarTecnico(servico.id)}>
+                                                            <Check />
+                                                        </IconButton>
+                                                        <IconButton size="sm" color="danger" variant="soft" onClick={() => { setAlterandoTecnicoServico(''); setNovoTecnicoId(''); }}>
+                                                            <Close />
+                                                        </IconButton>
+                                                    </Box> : <Box sx={{ display: 'flex', gap: 1 }}>
+                                                        <Input sx={{ flexGrow: 1 }} value={servico.tecnico?.nome} disabled />
+                                                        <IconButton size="sm" onClick={() => { setAlterandoTecnicoServico(servico.id); setNovoTecnicoId(servico.tecnico_id); }}>
+                                                            <Edit />
+                                                        </IconButton>
+                                                    </Box>)
+                                                : <Input value={servico.tecnico?.nome} disabled />}
                                             </FormControl>
                                         </Stack>
-                                        { servico.descricao || servico.status === 1 ? <><Divider/>
+                                        {['DEV', 'ADM', 'TEC'].includes(usuario?.permissao || '') && servico.historicoTecnicos && servico.historicoTecnicos.length > 0 ?
+                                            <Stack spacing={0.5}>
+                                                {servico.historicoTecnicos.map((historico) => (
+                                                    <Typography key={historico.id} level="body-xs" sx={{ color: 'text.tertiary' }}>
+                                                        {new Date(historico.alterado_em).toLocaleDateString('pt-BR')} - {new Date(historico.alterado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}: {historico.alteradoPor?.nome} alterou o técnico de {historico.tecnicoAnterior?.nome} para {historico.tecnicoNovo?.nome}
+                                                    </Typography>
+                                                ))}
+                                            </Stack>
+                                        : null}
+                                        { servico.descricao || servico.status === 1 ? <Box><Divider/>
                                         <Stack direction="row" spacing={2}>
                                             <FormControl sx={{ flexGrow: 1 }}>
                                                 <FormLabel>Descrição</FormLabel>
@@ -466,10 +515,10 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                     minRows={3}
                                                     maxRows={3}
                                                     value={
-                                                        index === 0 ? 
-                                                            (!servicoAtualDescricao && servicoAtualSalvar ? servico.descricao : servicoAtualDescricao)
-                                                        : 
-                                                            servico.descricao
+                                                        index === 0 ?
+                                                            (!servicoAtualDescricao && servicoAtualSalvar ? (servico.descricao ?? '') : servicoAtualDescricao)
+                                                        :
+                                                            (servico.descricao ?? '')
                                                     }
                                                     onChange={(event) => {
                                                         if (index === 0)
@@ -479,7 +528,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                     disabled={servico.status > 1 || !['TEC'].includes(usuario?.permissao || '')}
                                                 />
                                             </FormControl>
-                                        </Stack></> : null }
+                                        </Stack></Box> : null }
                                     </Stack>
                                     {servico.materiais && servico.materiais.length > 0 ? 
                                         <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
@@ -548,7 +597,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                 </Card>
                             </TimelineContent>
                         </TimelineItem>
-                    </>)) : null}
+                    </Fragment>)) : null}
                     <TimelineItem key={ordem?.id}>
                         <TimelineOppositeContent>
                                 { ordem?.data_solicitacao ? 
@@ -564,7 +613,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                         <TimelineContent>
                             <Card sx={{ width: '100%' }}>
                                     {ordem && usuario?.permissao !== 'USR' ?
-                                    <><Stack direction="row" spacing={2}>
+                                    <Box><Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
                                             <FormLabel>Prioridade</FormLabel>
                                             <Select value={prioridade} onChange={(_, value) => setPrioridade(Number(value))} disabled={ordem.status > 2}>
@@ -574,8 +623,8 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                                 <Option value={4}>Urgente</Option>
                                             </Select>
                                         </FormControl>
-                                    </Stack><Divider/></> : null}
-                                    {ordem && ordem.solicitante ? <>
+                                    </Stack><Divider/></Box> : null}
+                                    {ordem && ordem.solicitante ? <Box>
                                         <Stack direction="row" spacing={2}>
                                             <FormControl sx={{ flexGrow: 1 }}>
                                                 <FormLabel>Solicitante</FormLabel>
@@ -583,7 +632,7 @@ export default function ChamadoDetalhes(props: { params: { id: string } }) {
                                             </FormControl>
                                         </Stack>
                                         <Divider/>
-                                    </> : null}
+                                    </Box> : null}
                                     <Stack direction="row" spacing={2}>
                                         <FormControl sx={{ flexGrow: 1 }}>
                                             <FormLabel>Unidade *</FormLabel>

@@ -1,6 +1,6 @@
 'use client'
 
-import * as xlsx from 'xlsx';
+import * as xlsx from '@e965/xlsx';
 import * as relatorioServices from '@/shared/services/relatorio.services';
 import { Suspense, useEffect, useRef, useState } from "react"
 import Content from '@/components/Content';

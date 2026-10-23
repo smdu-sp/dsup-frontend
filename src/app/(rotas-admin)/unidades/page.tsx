@@ -22,7 +22,7 @@ export default function Unidades(){
 function SearchUnidades() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [unidades, setUnidades] = useState<IUnidade[]>([]);
+  const [unidades, setUnidades] = useState<IUnidade[] | undefined>([]);
   const [pagina, setPagina] = useState(searchParams.get('pagina') ? Number(searchParams.get('pagina')) : 1);
   const [limite, setLimite] = useState(searchParams.get('limite') ? Number(searchParams.get('limite')) : 10);
   const [total, setTotal] = useState(searchParams.get('total') ? Number(searchParams.get('total')) : 1);
@@ -50,6 +50,9 @@ function SearchUnidades() {
 
   useEffect(() => {
     buscaUnidades();
+    // busca fica de fora de propósito: a busca textual só dispara no Enter
+    // (ver buscaUnidades/onKeyDown), não a cada tecla digitada.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ status, pagina, limite ]);
   
   const createQueryString = useCallback(

@@ -29,7 +29,7 @@ export default function Content({
 }) {
   useEffect(() => {
     document.title = titulo + ' | ' + (process.env.NEXT_PUBLIC_PROJECT_NAME || 'SISAR');
-  }, []);
+  }, [titulo]);
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
         <Header />

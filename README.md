@@ -1,5 +1,25 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Arquitetura
+
+App "fullstack": não há backend separado. `src/shared/services/*.services.ts`
+são Server Actions que acessam o banco direto via Prisma (`src/shared/lib/prisma.ts`),
+sem passar por nenhuma API HTTP. Autenticação em `src/shared/auth/authOptions.ts`
+(NextAuth, sessão JWT nativa). O antigo `dsup-backend` (NestJS) foi
+descontinuado — a lógica de cada módulo dele foi portada 1:1 pra cá.
+
+Dois bancos MySQL via Prisma:
+- `prisma/schema.prisma` — banco principal da aplicação (`DATABASE_URL`).
+- `sgu/schema.prisma` — banco institucional legado, só leitura (`SGU_DATABASE_URL`),
+  gerado num client separado (`@prisma/sgu/client`).
+
+`npm run postinstall` regenera os dois clients Prisma — rode manualmente
+(`npm run postinstall`) se `node_modules/@prisma/sgu/client` sumir depois de
+um `npm install`.
+
+**Testes**: `npm run test:integration` (Jest, contra um banco de teste MySQL
+descartável — configure `.env.test.local`) e `npm run test:e2e` (Playwright).
+
 ## Getting Started
 
 First, run the development server:

@@ -64,6 +64,9 @@ function SearchUsuarios() {
             setUsuario(response);
         })
     buscaUsuarios();
+    // busca fica de fora de propósito: a busca textual só dispara no Enter
+    // (ver buscaUsuarios/onKeyDown), não a cada tecla digitada.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ status, pagina, limite, permissao, unidade_id ]);
   
   const createQueryString = useCallback(

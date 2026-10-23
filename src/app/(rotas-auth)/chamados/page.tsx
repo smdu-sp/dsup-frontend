@@ -90,7 +90,13 @@ function SearchChamados() {
   const [confirma, setConfirma] = useState(confirmaVazio);
   const router = useRouter();
 
-  function atualizaDados() {
+  useEffect(() => {
+    // Roda só na montagem: usado só aqui, então em vez de memoizar (o que
+    // exigiria incluir criado/pathname/router/setAlert como dependências e
+    // re-rodar a cada navegação), o corpo entra direto no efeito.
+    usuarioServices.validaUsuario().then((response: IUsuario) => {
+      setUsuario(response);
+    })
     if (criado === '1') {
       setAlert('Chamado criado com sucesso!', 'Sucesso', 'success', 3000, Check);
       router.push(pathname);
@@ -107,26 +113,30 @@ function SearchChamados() {
         .then((response: IUsuario[]) => {
           if (response && response.length > 0){
             setUsuarios(response);
-            setTecnicos(response.filter((usuario: IUsuario) => usuario.permissao === 'TEC'));
+            setTecnicos(response.filter((usuario: IUsuario) => usuario.permissao === 'TEC' && usuario.status === 1));
           }
         })
     usuarioServices.validaUsuario()
         .then((response: IUsuario) => {
             setLogado(response);
         })
-  }
-
-  useEffect(() => {
-    usuarioServices.validaUsuario().then((response: IUsuario) => {
-      setUsuario(response);
-    })
-    atualizaDados();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const buscaOrdens = useCallback(async () => {
+    ordemServices.buscarTudo(status, pagina, limite, unidade_id, solicitante_id, 0, '', tipo)
+      .then((response: IPaginadoOrdem) => {
+        setOrdens(response.data);
+        setTotal(response.total);
+        setPagina(response.pagina);
+        setLimite(response.limite);
+      });
+  }, [ status, pagina, limite, unidade_id, solicitante_id, tipo ]);
 
   useEffect(() => {
     buscaOrdens();
-  }, [ status, pagina, limite, unidade_id, solicitante_id, tipo ]);
-  
+  }, [ buscaOrdens ]);
+
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
@@ -135,16 +145,6 @@ function SearchChamados() {
     },
     [searchParams]
   );
-
-  const buscaOrdens = async () => {
-    ordemServices.buscarTudo(status, pagina, limite, unidade_id, solicitante_id, 0, '', tipo)
-      .then((response: IPaginadoOrdem) => {
-        setOrdens(response.data);
-        setTotal(response.total);
-        setPagina(response.pagina);
-        setLimite(response.limite);
-      });
-  }
 
   const mudaPagina = (
     _: React.MouseEvent<HTMLButtonElement> | null,

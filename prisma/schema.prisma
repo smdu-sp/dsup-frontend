@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Permissao {
+  DEV
+  ADM
+  TEC
+  USR
+}
+
+model Usuario {
+  id            String      @id @default(uuid())
+  nome          String
+  login         String      @unique
+  email         String      @unique
+  permissao     Permissao   @default(USR)
+  status        Int         @default(1)
+
+  ultimologin   DateTime    @default(now())
+  criadoEm      DateTime    @default(now())
+  atualizadoEm  DateTime    @default(now()) @updatedAt
+
+  ordens      Ordem[]
+  servicos    Servico[]
+  unidade     Unidade?   @relation(fields: [unidade_id], references: [id], onDelete: Cascade)
+  unidade_id  String?
+
+  historicoTecnicoAnterior  HistoricoTecnico[] @relation("HistoricoTecnicoAnterior")
+  historicoTecnicoNovo      HistoricoTecnico[] @relation("HistoricoTecnicoNovo")
+  historicoTecnicoAlterado  HistoricoTecnico[] @relation("HistoricoTecnicoAlteradoPor")
+
+  @@map("usuarios")
+}
+
+model Unidade {
+  id        String    @id @default(uuid())
+  nome      String    @unique
+  sigla     String    @unique
+  codigo    String    @unique
+  status    Boolean   @default(true)
+
+  usuarios  Usuario[]
+  ordens    Ordem[]
+
+  @@map("unidades")
+}
+
+model Ordem {
+  id                String    @id
+  unidade_id        String
+  unidade           Unidade   @relation(fields: [unidade_id], references: [id], onDelete: Cascade)
+  andar             Int
+  sala              String
+  solicitante       Usuario   @relation(fields: [solicitante_id], references: [id], onDelete: Cascade)
+  solicitante_id    String
+  tratar_com        String?
+  telefone          String    @default("")
+  data_solicitacao  DateTime  @default(now())
+  tipo              Int       @default(0)
+  status            Int       @default(1)
+  prioridade        Int       @default(1)
+  observacoes       String    @db.Text
+  servicos          Servico[]
+
+  @@map("ordens")
+}
+
+model HistoricoTecnico {
+  id                    String    @id @default(uuid())
+  servico               Servico   @relation(fields: [servico_id], references: [id], onDelete: Cascade)
+  servico_id            String
+  tecnicoAnterior       Usuario   @relation("HistoricoTecnicoAnterior", fields: [tecnico_anterior_id], references: [id], onDelete: Cascade)
+  tecnico_anterior_id   String
+  tecnicoNovo           Usuario   @relation("HistoricoTecnicoNovo", fields: [tecnico_novo_id], references: [id], onDelete: Cascade)
+  tecnico_novo_id       String
+  alteradoPor           Usuario   @relation("HistoricoTecnicoAlteradoPor", fields: [alterado_por_id], references: [id], onDelete: Cascade)
+  alterado_por_id       String
+  alterado_em           DateTime  @default(now())
+
+  @@map("historico_tecnicos")
+}
+
+model Servico {
+  id                  String              @id @default(uuid())
+  tecnico             Usuario             @relation(fields: [tecnico_id], references: [id], onDelete: Cascade)
+  tecnico_id          String
+  data_inicio         DateTime            @default(now())
+  data_fim            DateTime?
+  descricao           String?
+  materiais           Material[]
+  suspensoes          Suspensao[]
+  ordem               Ordem               @relation(fields: [ordem_id], references: [id], onDelete: Cascade)
+  ordem_id            String
+  avaliado_em         DateTime?
+  status              Int                 @default(1)
+  observacao          String?
+  historicoTecnicos   HistoricoTecnico[]
+
+  @@map("servicos")
+}
+
+model Suspensao {
+  id                  String              @id @default(uuid())
+  servico_id          String
+  servico             Servico             @relation(fields: [servico_id], references: [id], onDelete: Cascade)
+  motivo              String
+  inicio              DateTime            @default(now())
+  termino             DateTime?
+  status              Boolean             @default(true)
+
+  @@map("suspensoes")
+}
+
+model SugestaoMaterial {
+  id                  String              @id @default(uuid())
+  nome                String              @unique
+
+  @@map("sugestao_materiais")
+}
+
+model Material {
+  id          String @id @default(uuid())
+  nome        String
+  quantidade  Float
+  medida      String
+
+  servico_id  String
+  servico     Servico @relation(fields: [servico_id], references: [id], onDelete: Cascade)
+
+  @@map("materiais")
+}

@@ -1,56 +1,46 @@
-import { jwtDecode } from "jwt-decode";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "@/shared/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
-    providers: [
-      CredentialsProvider({
-        name: "credentials",
-        credentials: {
-          login: { label: "Login", type: "text" },
-          senha: {  label: "Senha", type: "password" }
-        },
-        async authorize(credentials, _) {
-          if (credentials?.login && credentials?.senha){
-            const { login, senha } = credentials;
-            const response = await fetch(`${process.env.API_URL}login`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ login, senha })
-            });
-            const usuario = await response.json();
-            if (usuario && response.ok) return usuario;
-          }
-          return null;
-        }
-      })
-    ],
-    pages: {
-      signIn: "/login"
-    },
-    callbacks: {
-      async jwt({ token, user }) {
-        user && (token.user = user);
-        return token;
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        login: { label: "Login", type: "text" },
+        senha: { label: "Senha", type: "password" }
       },
-      async session({ session, token }) {
-        session = token.user as any;
-        session.usuario = jwtDecode(session.access_token);
-        const now = new Date();
-        if (session.usuario.exp*1000 < now.getTime()) {
-          const response = await fetch(`${process.env.API_URL}refresh`, {
+      async authorize(credentials) {
+        if (!credentials?.login || !credentials?.senha) return null;
+        const { login, senha } = credentials;
+
+        const usuario = await prisma.usuario.findUnique({ where: { login } });
+        if (!usuario) return null;
+        if (usuario.status !== 1) return null;
+
+        if (process.env.ENVIRONMENT !== "local") {
+          const auth_response = await fetch(`${process.env.SMUL_AUTH_URL}ldap/autenticar`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            }, body: JSON.stringify({ refresh_token: session.refresh_token })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ login, senha })
           });
-          const { access_token, refresh_token } = await response.json();
-          session.access_token = access_token;
-          session.refresh_token = refresh_token;
-          session.usuario = jwtDecode(access_token);
+          if (auth_response.status !== 200) return null;
         }
-        return session;
+
+        return { id: usuario.id };
       }
+    })
+  ],
+  pages: {
+    signIn: "/login"
+  },
+  session: {
+    strategy: "jwt"
+  },
+  callbacks: {
+    async session({ session, token }) {
+      session.usuario = { id: token.sub as string };
+      return session;
     }
-  };
-  
+  }
+};

@@ -38,9 +38,10 @@ export default function Login() {
     setAlert('Bem-vindo!', 'Login efetuado com sucesso', 'success', 5000);
     setTimeout(() => router.replace('/'), 3000);
   }
-  const [windowSize, setWindowSize] = useState(getWindowSize());
+  const [windowSize, setWindowSize] = useState({ innerWidth: 0, innerHeight: 0 });
   useEffect(() => {
     function handleWindowResize() {setWindowSize(getWindowSize())}
+    handleWindowResize();
     window.addEventListener('resize', handleWindowResize);
     return () => {window.removeEventListener('resize', handleWindowResize)};
   }, []);
