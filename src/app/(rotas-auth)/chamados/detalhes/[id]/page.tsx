@@ -70,7 +70,10 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
     const atualizaDados = useCallback(() => {
         if (id) ordemServices.buscarPorId(id)
             .then((ordem: IOrdem) => {
-                if (!ordem || !ordem.id) router.push('/chamados');
+                if (!ordem || !ordem.id) {
+                    router.push('/chamados');
+                    return;
+                }
                 setOrdem(ordem);
                 setUnidade_id(ordem.unidade_id);
                 setAndar(ordem.andar);
