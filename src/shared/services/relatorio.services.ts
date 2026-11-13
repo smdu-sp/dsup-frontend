@@ -56,9 +56,6 @@ async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: numb
             },
         });
 
-        // Caracterização: se um chamado nunca foi atribuído (servicos vazio),
-        // isso quebra igual quebrava no Nest — não é um dos 3 bugs aprovados
-        // pra correção, preservado como estava.
         return chamados.map((chamado) => ({
             '#': chamado.id,
             Prioridade: prioridades[chamado.prioridade],
@@ -66,9 +63,9 @@ async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: numb
             Status: status[chamado.status],
             Unidade: chamado.unidade.sigla,
             Solicitante: chamado.solicitante.nome,
-            'Técnico Responsável': chamado.servicos[0].tecnico.nome,
+            'Técnico Responsável': chamado.servicos[0]?.tecnico?.nome ?? '',
             'Data de Abertura': new Date(chamado.data_solicitacao).toLocaleDateString().split('T')[0],
-            'Data de Encerramento': chamado.servicos[0].data_fim
+            'Data de Encerramento': chamado.servicos[0]?.data_fim
                 ? new Date(chamado.servicos[0].data_fim).toLocaleDateString().split('T')[0]
                 : '',
         })) as unknown as IChamadoPeriodoAno[];

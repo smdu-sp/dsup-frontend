@@ -250,7 +250,7 @@ async function buscarNovo(login: string): Promise<{ id?: string, login?: string,
             unidade_id = unidade ? unidade.id : '';
         }
 
-        const ldap_fetch = await fetch(`${process.env.SMUL_AUTH_URL}ldap/buscar-por-login/${login}`);
+        const ldap_fetch = await fetch(`${process.env.SMUL_AUTH_URL}ldap/buscar-por-login/${login}?secretarias=SMUL`);
         // Objeto vazio (não undefined): todos os campos do retorno são
         // opcionais e o caller acessa .message/.id/.email direto sem
         // checar se o objeto inteiro existe.

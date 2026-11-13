@@ -40,6 +40,11 @@ function BuscaRelatorios(){
       case "listarChamadosPeriodoAno":
         relatorioServices.listarChamadosPeriodoAno(ano_inicio, ano_fim)
         .then((response: relatorioServices.IChamadoPeriodoAno[]) => {
+          if (!response) {
+            setTotalPorTipo(undefined);
+            setDataRelatorio([]);
+            return;
+          }
           const totalPorTipo: Record<string, number> = { 'Hidráulica': 0, 'Elétrica': 0, 'Telefonia': 0, 'Outros': 0 };
           response.forEach((row: relatorioServices.IChamadoPeriodoAno) => {
             if (row.Tipo && totalPorTipo.hasOwnProperty(row.Tipo)) {
