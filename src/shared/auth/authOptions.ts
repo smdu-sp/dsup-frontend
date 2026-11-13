@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
         if (usuario.status !== 1) return null;
 
         if (process.env.ENVIRONMENT !== "local") {
-          const auth_response = await fetch(`${process.env.SMUL_AUTH_URL}ldap/autenticar`, {
+          const auth_response = await fetch(`${process.env.SMUL_AUTH_URL}auth/ldap/autenticar`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ login, senha })
