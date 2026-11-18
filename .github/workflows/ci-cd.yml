@@ -1,0 +1,90 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: dsup-base-test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instala dependências
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Aplica migrations no banco de teste
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/dsup-base-test
+        run: npx prisma migrate deploy --schema=prisma/schema.prisma
+
+      - name: Testes de integração
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/dsup-base-test
+          SGU_DATABASE_URL: mysql://root:root@127.0.0.1:3306/dsup-base-test
+          NEXTAUTH_SECRET: ci-secret
+          NEXTAUTH_URL: http://localhost:3001
+          ENVIRONMENT: local
+          SMUL_AUTH_URL: http://localhost:9999/
+          MAIL_HOST: localhost
+          MAIL_PORT: '1025'
+          MAIL_USER: test@example.com
+          MAIL_PASS: test
+        run: npm run test:integration
+
+      - name: Build de produção (smoke test)
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/dsup-base-test
+          SGU_DATABASE_URL: mysql://root:root@127.0.0.1:3306/dsup-base-test
+          NEXTAUTH_SECRET: ci-secret
+          NEXTAUTH_URL: http://localhost:3001
+        run: npm run build
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: self-hosted
+    timeout-minutes: 15
+    concurrency:
+      group: deploy-dsup
+      cancel-in-progress: false
+
+    steps:
+      - name: Deploy (pull, migrate, build, restart)
+        run: |
+          set -e
+          cd /var/www/dsup
+          git fetch origin main
+          git merge --ff-only origin/main
+          npm ci
+          npx prisma migrate deploy --schema=prisma/schema.prisma
+          npm run build
+          pm2 restart dsup

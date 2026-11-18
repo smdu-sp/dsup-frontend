@@ -5,16 +5,21 @@ import { getUsuarioAtual } from "@/shared/lib/getUsuarioAtual";
 import { requerPermissao } from "@/shared/lib/permissao";
 
 export interface IChamadoPeriodoAno {
+    Finalizado: string;
     '#': string;
     Prioridade: string;
     Tipo: string;
     Status: string;
     Unidade: string;
+    Andar: string;
+    Sala: string;
     Solicitante: string;
+    'Tratar com': string;
+    Telefone: string;
     'Técnico Responsável': string;
     'Data de Abertura': string;
     'Data de Encerramento': string;
-    '': string;
+    'Observações': string;
 }
 
 async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: number = 2024): Promise<IChamadoPeriodoAno[]> {
@@ -43,6 +48,11 @@ async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: numb
             orderBy: { data_solicitacao: 'asc' },
             select: {
                 id: true,
+                andar: true,
+                sala: true,
+                tratar_com: true,
+                telefone: true,
+                observacoes: true,
                 data_solicitacao: true,
                 prioridade: true,
                 tipo: true,
@@ -57,17 +67,23 @@ async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: numb
         });
 
         return chamados.map((chamado) => ({
+            Finalizado: chamado.status === 4 ? 'Sim' : 'Não',
             '#': chamado.id,
             Prioridade: prioridades[chamado.prioridade],
             Tipo: tipos[chamado.tipo],
             Status: status[chamado.status],
             Unidade: chamado.unidade.sigla,
+            Andar: String(chamado.andar),
+            Sala: chamado.sala,
             Solicitante: chamado.solicitante.nome,
+            'Tratar com': chamado.tratar_com ?? '',
+            Telefone: chamado.telefone,
             'Técnico Responsável': chamado.servicos[0]?.tecnico?.nome ?? '',
             'Data de Abertura': new Date(chamado.data_solicitacao).toLocaleDateString().split('T')[0],
             'Data de Encerramento': chamado.servicos[0]?.data_fim
                 ? new Date(chamado.servicos[0].data_fim).toLocaleDateString().split('T')[0]
                 : '',
+            'Observações': chamado.observacoes,
         })) as unknown as IChamadoPeriodoAno[];
     } catch {
         return undefined as unknown as IChamadoPeriodoAno[];

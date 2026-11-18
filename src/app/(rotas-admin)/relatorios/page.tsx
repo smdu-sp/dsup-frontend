@@ -4,7 +4,7 @@ import * as xlsx from '@e965/xlsx';
 import * as relatorioServices from '@/shared/services/relatorio.services';
 import { Suspense, useEffect, useRef, useState } from "react"
 import Content from '@/components/Content';
-import { Box, FormControl, FormLabel, IconButton, Select, Option, Table } from '@mui/joy';
+import { Box, Button, Checkbox, DialogTitle, FormControl, FormLabel, IconButton, Modal, ModalDialog, Select, Option, Stack, Table } from '@mui/joy';
 import { Clear, FileDownload, Refresh } from '@mui/icons-material';
 import { FaFilePdf, FaRegFileExcel, FaRegFilePdf } from 'react-icons/fa6';
 
@@ -25,7 +25,9 @@ function BuscaRelatorios(){
   const [ ano_fim, setAnoFim ] = useState<number>(2024);
   const [ dataRelatorio, setDataRelatorio] = useState<any[][]>([]);
   const [ anos, setAnos ] = useState<number[]>([]);
-  const [ totalPorTipo, setTotalPorTipo ] = useState<Record<string, number>>(); 
+  const [ totalPorTipo, setTotalPorTipo ] = useState<Record<string, number>>();
+  const [ modalExportOpen, setModalExportOpen ] = useState<boolean>(false);
+  const [ camposSelecionados, setCamposSelecionados ] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let anos = [];
@@ -63,28 +65,48 @@ function BuscaRelatorios(){
 
   function downloadArquivo(tipo: string){
     switch (tipo){
-      case "xlsx":
-        downloadXlsx();
-        break;
       case "pdf":
         downloadPdf();
-        break; 
+        break;
     }
   }
-  
-  function downloadXlsx(){
+
+  function abrirModalExportXlsx(){
+    if (dataRelatorio.length < 2 || dataRelatorio[1].length === 0) return;
+    const campos = Object.keys(dataRelatorio[1][0]);
+    const selecaoPadrao: Record<string, boolean> = {};
+    campos.forEach((campo) => { selecaoPadrao[campo] = true; });
+    setCamposSelecionados(selecaoPadrao);
+    setModalExportOpen(true);
+  }
+
+  function confirmarExportXlsx(){
+    const camposSelecionadosLista = Object.keys(camposSelecionados).filter((campo) => camposSelecionados[campo]);
+    downloadXlsx(camposSelecionadosLista);
+    setModalExportOpen(false);
+  }
+
+  function downloadXlsx(camposSelecionadosLista?: string[]){
     if (dataRelatorio.length === 0) return;
     const wb = xlsx.utils.book_new();
     var relatorios = 1;
     for (const tabela of dataRelatorio){
       if (tabela.length === 0) return;
-      const ws = xlsx.utils.json_to_sheet(tabela);
+      let dadosTabela = tabela;
+      if (relatorios === 2 && camposSelecionadosLista && camposSelecionadosLista.length > 0){
+        dadosTabela = tabela.map((linha: any) => {
+          const linhaFiltrada: Record<string, any> = {};
+          camposSelecionadosLista.forEach((campo) => { linhaFiltrada[campo] = linha[campo]; });
+          return linhaFiltrada;
+        });
+      }
+      const ws = xlsx.utils.json_to_sheet(dadosTabela);
       xlsx.utils.book_append_sheet(wb, ws, `Relatório_${relatorios}`);
       relatorios++;
     }
     xlsx.writeFile(wb, `${new Date().toLocaleDateString()}_${relatorio}_${ano_inicio}_${ano_fim}.xlsx`);
   }
-  
+
   function downloadPdf(){
     if (!tableRef.current) return;
 
@@ -160,7 +182,7 @@ function BuscaRelatorios(){
             </Select>
           </FormControl>
         </Box>
-        <IconButton title="Baixar planilha" size="sm" color='success' sx={{ display: dataRelatorio.length > 0 ? 'flex' : 'none' }} onClick={() => { downloadArquivo("xlsx") }}><FaRegFileExcel size={24} /></IconButton>
+        <IconButton title="Baixar planilha" size="sm" color='success' sx={{ display: dataRelatorio.length > 0 ? 'flex' : 'none' }} onClick={() => { abrirModalExportXlsx() }}><FaRegFileExcel size={24} /></IconButton>
         <IconButton title="Baixar pdf" size="sm" color='danger' sx={{ display: dataRelatorio.length > 0 ? 'flex' : 'none' }} onClick={() => { downloadArquivo("pdf") }}><FaRegFilePdf size={24} /></IconButton>
       </Box>
       <div ref={tableRef}>
@@ -185,6 +207,25 @@ function BuscaRelatorios(){
           </Table>
         ))}
       </div>
+      <Modal open={modalExportOpen} sx={{ zIndex: 99 }} onClose={() => setModalExportOpen(false)}>
+        <ModalDialog>
+          <DialogTitle>Selecionar campos para exportação</DialogTitle>
+          <Stack spacing={1} sx={{ my: 1, maxHeight: '60vh', overflowY: 'auto' }}>
+            {Object.keys(camposSelecionados).map((campo) => (
+              <Checkbox
+                key={campo}
+                label={campo || '(sem nome)'}
+                checked={camposSelecionados[campo]}
+                onChange={(e) => setCamposSelecionados((prev) => ({ ...prev, [campo]: e.target.checked }))}
+              />
+            ))}
+          </Stack>
+          <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Button variant="plain" color="neutral" onClick={() => setModalExportOpen(false)}>Cancelar</Button>
+            <Button color="success" onClick={confirmarExportXlsx}>Exportar</Button>
+          </Stack>
+        </ModalDialog>
+      </Modal>
     </Content>
   </>
 }
