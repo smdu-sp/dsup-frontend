@@ -2,7 +2,7 @@
 
 import { prisma } from "@/shared/lib/prisma";
 import { getUsuarioAtual } from "@/shared/lib/getUsuarioAtual";
-import { requerPermissao, AcaoNaoAutorizada } from "@/shared/lib/permissao";
+import { requerPermissao, ehTecnico, AcaoNaoAutorizada } from "@/shared/lib/permissao";
 import { emailAtualizacaoChamado, enviaEmail } from "@/shared/lib/mail";
 import { IUsuario } from "./usuario.services";
 import { IOrdem } from "./ordem.services";
@@ -74,13 +74,13 @@ async function criar(servicoDto: { ordem_id: string, prioridade: number, tecnico
         if (servicoDto.tecnico_id) {
             const tecnico = await prisma.usuario.findUnique({ where: { id: servicoDto.tecnico_id } });
             if (!tecnico) throw new AcaoNaoAutorizada('Técnico não encontrado.');
-            if (tecnico.permissao !== 'TEC') throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
+            if (!ehTecnico(tecnico)) throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
             tecnico_id = tecnico.id;
         }
         if (!servicoDto.tecnico_id || servicoDto.tecnico_id === '') {
             const tecnico = await prisma.usuario.findUnique({ where: { id: usuario.id } });
             if (!tecnico) throw new AcaoNaoAutorizada('Técnico não encontrado.');
-            if (tecnico.permissao !== 'TEC') throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
+            if (!ehTecnico(tecnico)) throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
             tecnico_id = tecnico.id;
         }
         if (!servicoDto.ordem_id) throw new AcaoNaoAutorizada('Ordem de Serviço não informada.');
@@ -193,7 +193,7 @@ async function alterarTecnico(id: string, alterarTecnicoDto: { tecnico_id: strin
         }
         const tecnico = await prisma.usuario.findUnique({ where: { id: alterarTecnicoDto.tecnico_id } });
         if (!tecnico) throw new AcaoNaoAutorizada('Técnico não encontrado.');
-        if (tecnico.permissao !== 'TEC') throw new AcaoNaoAutorizada('Usuário informado não é um técnico.');
+        if (!ehTecnico(tecnico)) throw new AcaoNaoAutorizada('Usuário informado não é um técnico.');
         if (tecnico.status !== 1) throw new AcaoNaoAutorizada('Técnico informado está inativo.');
 
         const atualizado = await prisma.servico.update({ where: { id }, data: { tecnico_id: alterarTecnicoDto.tecnico_id } });

@@ -16,3 +16,10 @@ export function requerPermissao(usuario: Usuario | null, roles: string[]): asser
     throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
   }
 }
+
+// Técnico "de fato": quem tem permissao TEC, ou um ADM com a flag
+// atuaComoTecnico marcada (admin que também atua em campo).
+export function ehTecnico(usuario: { permissao: string; atuaComoTecnico?: boolean | null } | null | undefined): boolean {
+  if (!usuario) return false;
+  return usuario.permissao === 'TEC' || (usuario.permissao === 'ADM' && usuario.atuaComoTecnico === true);
+}

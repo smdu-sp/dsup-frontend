@@ -14,6 +14,7 @@ export interface IUsuario {
     email: string;
     login: string;
     permissao: string;
+    atuaComoTecnico: boolean;
     status: number;
     unidade_id: string;
     unidade?: IUnidade;
@@ -27,12 +28,14 @@ export interface ICreateUsuario {
     email: string;
     login: string;
     permissao: string;
+    atuaComoTecnico?: boolean;
     unidade_id?: string;
 }
 
 export interface IUpdateUsuario {
     id?: string;
     permissao?: string;
+    atuaComoTecnico?: boolean;
     status?: number;
     unidade_id?: string;
 }
@@ -172,6 +175,7 @@ async function criar(data: ICreateUsuario): Promise<IUsuario> {
                 login: data.login,
                 email: data.email,
                 permissao,
+                ...(data.atuaComoTecnico !== undefined && { atuaComoTecnico: data.atuaComoTecnico }),
                 ...(unidade_id ? { unidade_id } : {}),
             },
         });
@@ -188,9 +192,12 @@ async function atualizar(id: string, data: IUpdateUsuario): Promise<IUsuario> {
         if (['TEC', 'USR'].includes(usuarioLogado.permissao) && id !== usuarioLogado.id) {
             throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
         }
-        const atualizacao: { permissao?: $Enums.Permissao; status?: number; unidade_id?: string } = {
+        const atualizacao: { permissao?: $Enums.Permissao; atuaComoTecnico?: boolean; status?: number; unidade_id?: string } = {
             ...(data.status !== undefined && { status: data.status }),
             ...(data.unidade_id !== undefined && { unidade_id: data.unidade_id }),
+            // atuaComoTecnico só pode ser alterado por quem já gerencia permissões (ADM/DEV),
+            // nunca pelo próprio usuário num auto-edit (TEC/USR editando a si mesmo).
+            ...(data.atuaComoTecnico !== undefined && ['ADM', 'DEV'].includes(usuarioLogado.permissao) && { atuaComoTecnico: data.atuaComoTecnico }),
         };
         if (data.permissao) {
             atualizacao.permissao = validaPermissaoCriador(data.permissao as $Enums.Permissao, usuarioLogado.permissao as $Enums.Permissao);

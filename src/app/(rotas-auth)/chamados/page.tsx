@@ -16,6 +16,7 @@ import * as usuarioServices from '@/shared/services/usuario.services';
 import * as servicoServices from '@/shared/services/servico.services';
 import { IUsuario } from '@/shared/services/usuario.services';
 import { IServico } from '@/shared/services/servico.services';
+import { ehTecnico } from '@/shared/lib/permissao';
 
 export default function Chamados(){
   return (
@@ -113,7 +114,7 @@ function SearchChamados() {
         .then((response: IUsuario[]) => {
           if (response && response.length > 0){
             setUsuarios(response);
-            setTecnicos(response.filter((usuario: IUsuario) => usuario.permissao === 'TEC' && usuario.status === 1));
+            setTecnicos(response.filter((usuario: IUsuario) => ehTecnico(usuario) && usuario.status === 1));
           }
         })
     usuarioServices.validaUsuario()

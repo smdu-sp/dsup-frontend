@@ -23,6 +23,7 @@ model Usuario {
   login         String      @unique
   email         String      @unique
   permissao     Permissao   @default(USR)
+  atuaComoTecnico Boolean   @default(false)
   status        Int         @default(1)
 
   ultimologin   DateTime    @default(now())

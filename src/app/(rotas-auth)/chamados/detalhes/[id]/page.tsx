@@ -19,6 +19,7 @@ import Timeline from "@mui/lab/Timeline";
 import { OverridableStringUnion } from '@mui/types';
 import { TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@mui/lab";
 import { timelineOppositeContentClasses } from '@mui/lab/TimelineOppositeContent';
+import { ehTecnico } from "@/shared/lib/permissao";
 
 export default function ChamadoDetalhes(props: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -98,7 +99,7 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
         usuarioServices.listaCompleta()
             .then((response: IUsuario[]) => {
                 if (response && response.length > 0)
-                    setTecnicos(response.filter((usuario: IUsuario) => usuario.permissao === 'TEC' && usuario.status === 1));
+                    setTecnicos(response.filter((usuario: IUsuario) => ehTecnico(usuario) && usuario.status === 1));
             })
     }, [id, router]);
 
@@ -528,7 +529,7 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
                                                             setServicoAtualDescricao(event.target.value);
                                                             setServicoAtualSalvar(event.target.value === servico.descricao);
                                                     }}
-                                                    disabled={servico.status > 1 || !['TEC'].includes(usuario?.permissao || '')}
+                                                    disabled={servico.status > 1 || !ehTecnico(usuario)}
                                                 />
                                             </FormControl>
                                         </Stack></Box> : null }
@@ -556,7 +557,7 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
                                             </Stack>
                                         </CardOverflow>
                                     : null}
-                                    {(servico.status === 1 || servico.status === 5) && ['TEC'].includes(usuario?.permissao || '') ?
+                                    {(servico.status === 1 || servico.status === 5) && ehTecnico(usuario) ?
                                     <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
                                         <Stack spacing={2}>
                                             {index === 0 ? <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>

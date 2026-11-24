@@ -1,7 +1,7 @@
 'use client'
 
 import { useContext, useEffect, useState } from "react";
-import { Autocomplete, AutocompleteOption, Box, Button, Card, CardActions, CardOverflow, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormLabel, IconButton, Input, Option, Select, Stack } from "@mui/joy";
+import { Autocomplete, AutocompleteOption, Box, Button, Card, CardActions, CardOverflow, Checkbox, Chip, ChipPropsColorOverrides, ColorPaletteProp, Divider, FormControl, FormHelperText, FormLabel, IconButton, Input, Option, Select, Stack } from "@mui/joy";
 import { Badge, Business, Check, Clear, EmailRounded, Warning } from "@mui/icons-material";
 import { useRouter } from 'next/navigation';
 import { OverridableStringUnion } from '@mui/types';
@@ -16,6 +16,7 @@ import { AlertsContext } from "@/providers/alertsProvider";
 export default function UsuarioDetalhes(props: any) {
     const [usuario, setUsuario] = useState<IUsuario>();
     const [permissao, setPermissao] = useState('USR');
+    const [atuaComoTecnico, setAtuaComoTecnico] = useState(false);
     const [unidades, setUnidades] = useState<IUnidade[]>([]);
     const [unidade_id, setUnidade_id] = useState('');
     const [nome, setNome] = useState('');
@@ -39,6 +40,7 @@ export default function UsuarioDetalhes(props: any) {
                 .then((response: IUsuario) => {
                     setUsuario(response);
                     setPermissao(response.permissao);
+                    setAtuaComoTecnico(response.atuaComoTecnico ?? false);
                     setUnidade_id(response.unidade_id);
                     setEmail(response.email);
                 });
@@ -54,7 +56,8 @@ export default function UsuarioDetalhes(props: any) {
         if (usuario){
             usuarioServices.atualizar(usuario.id, {
                 unidade_id,
-                permissao
+                permissao,
+                atuaComoTecnico
             }).then((response) => {
                 if (response.id) {
                     setAlert('Usuário alterado!', 'Dados atualizados com sucesso!', 'success', 3000, Check);              
@@ -63,7 +66,7 @@ export default function UsuarioDetalhes(props: any) {
         } else {
             if (novoUsuario){
                 usuarioServices.criar({
-                    nome, login, email, unidade_id, permissao
+                    nome, login, email, unidade_id, permissao, atuaComoTecnico
                 }).then((response) => {
                     if (response.id) {
                         setAlert('Usuário criado!', 'Dados inseridos com sucesso!', 'success', 3000, Check);
@@ -97,6 +100,7 @@ export default function UsuarioDetalhes(props: any) {
         setEmail('');
         setUnidade_id('');
         setPermissao('USR');
+        setAtuaComoTecnico(false);
     }
     
 
@@ -169,6 +173,17 @@ export default function UsuarioDetalhes(props: any) {
                                 </Select>
                             </FormControl>
                         </Stack>
+                        {permissao === 'ADM' ? <><Divider />
+                        <Stack>
+                            <FormControl>
+                                <Checkbox
+                                    label="Também atua como técnico"
+                                    checked={atuaComoTecnico}
+                                    onChange={e => setAtuaComoTecnico(e.target.checked)}
+                                />
+                                <FormHelperText>Permite que este administrador seja atribuído a chamados, assim como um técnico.</FormHelperText>
+                            </FormControl>
+                        </Stack></> : null}
                         <Divider />
                         <Stack>
                             <FormControl>
