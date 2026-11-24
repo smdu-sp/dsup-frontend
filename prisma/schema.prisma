@@ -55,6 +55,17 @@ model Unidade {
   @@map("unidades")
 }
 
+model TipoChamado {
+  id      String   @id @default(uuid())
+  nome    String   @unique
+  cor     String   @default("neutral")
+  status  Boolean  @default(true)
+
+  ordens  Ordem[]
+
+  @@map("tipos_chamado")
+}
+
 model Ordem {
   id                String    @id
   unidade_id        String
@@ -66,7 +77,8 @@ model Ordem {
   tratar_com        String?
   telefone          String    @default("")
   data_solicitacao  DateTime  @default(now())
-  tipo              Int       @default(0)
+  tipoChamado       TipoChamado @relation(fields: [tipo_id], references: [id], onDelete: Restrict)
+  tipo_id           String
   status            Int       @default(1)
   prioridade        Int       @default(1)
   observacoes       String    @db.Text

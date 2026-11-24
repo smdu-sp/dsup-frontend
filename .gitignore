@@ -7,6 +7,9 @@
 .yarn/install-state.gz
 .env
 
+# backups de banco gerados por scripts/backup-db.sh (nunca versionar dump de dados)
+/backups
+
 # testing
 /coverage
 /test-results

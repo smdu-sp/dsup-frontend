@@ -9,10 +9,12 @@ export async function resetDb() {
   await prisma.ordem.deleteMany();
   await prisma.usuario.deleteMany();
   await prisma.unidade.deleteMany();
+  await prisma.tipoChamado.deleteMany();
 }
 
 export interface UsuariosSeed {
   unidade: Awaited<ReturnType<typeof prisma.unidade.create>>;
+  tipoChamado: Awaited<ReturnType<typeof prisma.tipoChamado.create>>;
   dev: Awaited<ReturnType<typeof prisma.usuario.create>>;
   adm: Awaited<ReturnType<typeof prisma.usuario.create>>;
   tec: Awaited<ReturnType<typeof prisma.usuario.create>>;
@@ -24,6 +26,10 @@ export interface UsuariosSeed {
 export async function seedBase(): Promise<UsuariosSeed> {
   const unidade = await prisma.unidade.create({
     data: { nome: 'Unidade Teste', sigla: 'UT', codigo: '001' },
+  });
+
+  const tipoChamado = await prisma.tipoChamado.create({
+    data: { nome: 'Tipo Teste', cor: 'primary' },
   });
 
   const criar = (login: string, permissao: $Enums.Permissao, status = 1) =>
@@ -47,5 +53,5 @@ export async function seedBase(): Promise<UsuariosSeed> {
   const tecInativo = await criar('ctecinativo', $Enums.Permissao.TEC, 2);
   const usr = await criar('cusr', $Enums.Permissao.USR);
 
-  return { unidade, dev, adm, tec, tec2, tecInativo, usr };
+  return { unidade, tipoChamado, dev, adm, tec, tec2, tecInativo, usr };
 }

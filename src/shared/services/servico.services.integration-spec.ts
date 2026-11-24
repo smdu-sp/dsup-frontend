@@ -16,7 +16,7 @@ describe('servico.services (integração, porta do Nest para Prisma direto)', ()
     return prisma.ordem.create({
       data: {
         id: `TEST-${String(ordemCounter).padStart(3, '0')}`,
-        unidade_id: unidadeId, andar: 8, sala: '801',
+        unidade_id: unidadeId, andar: 8, sala: '801', tipo_id: seed.tipoChamado.id,
         solicitante_id: solicitanteId, telefone: '11999999999', observacoes: 'Problema de teste',
       },
     });

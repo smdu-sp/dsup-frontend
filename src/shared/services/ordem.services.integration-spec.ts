@@ -12,7 +12,7 @@ describe('ordem.services (integração, porta do Nest para Prisma direto)', () =
   const dtoBase = () => ({
     andar: 8,
     sala: '801',
-    tipo: 1,
+    tipo_id: seed.tipoChamado.id,
     observacoes: 'Tomada não funciona',
     telefone: '11999999999',
   });
@@ -66,13 +66,13 @@ describe('ordem.services (integração, porta do Nest para Prisma direto)', () =
       });
       ordemPropria = await prisma.ordem.create({
         data: {
-          id: 'TEST-001', unidade_id: seed.unidade.id, andar: 8, sala: '801',
+          id: 'TEST-001', unidade_id: seed.unidade.id, andar: 8, sala: '801', tipo_id: seed.tipoChamado.id,
           solicitante_id: seed.usr.id, telefone: '11999999999', observacoes: 'Ordem do próprio usuário',
         },
       });
       ordemOutraUnidade = await prisma.ordem.create({
         data: {
-          id: 'TEST-002', unidade_id: unidadeOutra.id, andar: 1, sala: '101',
+          id: 'TEST-002', unidade_id: unidadeOutra.id, andar: 1, sala: '101', tipo_id: seed.tipoChamado.id,
           solicitante_id: usrOutraUnidade.id, telefone: '11888888888', observacoes: 'Ordem de outra unidade/solicitante',
         },
       });
@@ -94,9 +94,9 @@ describe('ordem.services (integração, porta do Nest para Prisma direto)', () =
       expect(ids).toContain(ordemOutraUnidade.id);
     });
 
-    it('fix: status/tipo NaN não quebram mais buscarTudo', async () => {
+    it('fix: status NaN não quebra mais buscarTudo', async () => {
       mockedGetUsuarioAtual.mockResolvedValue(seed.adm);
-      const resposta = await ordemServices.buscarTudo(NaN, 1, 10, '', '', 0, '', NaN);
+      const resposta = await ordemServices.buscarTudo(NaN, 1, 10, '', '', 0, '', '');
       expect(resposta.total).toBeGreaterThan(0);
     });
 
@@ -117,7 +117,7 @@ describe('ordem.services (integração, porta do Nest para Prisma direto)', () =
     it('fix: USR não pode mais mudar a prioridade de uma ordem (antes qualquer autenticado podia)', async () => {
       const ordem = await prisma.ordem.create({
         data: {
-          id: 'TEST-003', unidade_id: seed.unidade.id, andar: 8, sala: '801',
+          id: 'TEST-003', unidade_id: seed.unidade.id, andar: 8, sala: '801', tipo_id: seed.tipoChamado.id,
           solicitante_id: seed.adm.id, telefone: '11999999999', observacoes: 'Ordem de outro usuário',
         },
       });
@@ -135,13 +135,13 @@ describe('ordem.services (integração, porta do Nest para Prisma direto)', () =
     it('USR: "abertos" conta só as próprias ordens; "naoAtribuidos"/"concluidos" são globais', async () => {
       await prisma.ordem.create({
         data: {
-          id: 'TEST-004', unidade_id: seed.unidade.id, andar: 8, sala: '801',
+          id: 'TEST-004', unidade_id: seed.unidade.id, andar: 8, sala: '801', tipo_id: seed.tipoChamado.id,
           solicitante_id: seed.usr.id, telefone: '11999999999', observacoes: 'Aberta pelo próprio usr', status: 1,
         },
       });
       await prisma.ordem.create({
         data: {
-          id: 'TEST-005', unidade_id: seed.unidade.id, andar: 8, sala: '802',
+          id: 'TEST-005', unidade_id: seed.unidade.id, andar: 8, sala: '802', tipo_id: seed.tipoChamado.id,
           solicitante_id: seed.adm.id, telefone: '11999999999', observacoes: 'Aberta por outra pessoa', status: 1,
         },
       });

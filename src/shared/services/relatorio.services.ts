@@ -30,7 +30,6 @@ async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: numb
         requerPermissao(usuario, ['ADM']);
 
         const prioridades = ['', 'Baixa', 'Média', 'Alta', 'Urgente'];
-        const tipos = ['', 'Elétrica', 'Hidráulica', 'Telefonia', 'Outros'];
         const status = ['', 'Aberto', 'Em Andamento', 'Aguardando avaliação', 'Concluído'];
 
         if (!ano_fim) ano_fim = ano_inicio;
@@ -55,7 +54,7 @@ async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: numb
                 observacoes: true,
                 data_solicitacao: true,
                 prioridade: true,
-                tipo: true,
+                tipoChamado: { select: { nome: true } },
                 status: true,
                 solicitante: { select: { nome: true } },
                 unidade: { select: { sigla: true } },
@@ -70,7 +69,7 @@ async function listarChamadosPeriodoAno(ano_inicio: number = 2024, ano_fim: numb
             Finalizado: chamado.status === 4 ? 'Sim' : 'Não',
             '#': chamado.id,
             Prioridade: prioridades[chamado.prioridade],
-            Tipo: tipos[chamado.tipo],
+            Tipo: chamado.tipoChamado.nome,
             Status: status[chamado.status],
             Unidade: chamado.unidade.sigla,
             Andar: String(chamado.andar),

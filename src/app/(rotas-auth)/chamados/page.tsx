@@ -14,8 +14,10 @@ import * as ordemServices from '@/shared/services/ordem.services';
 import * as unidadeServices from '@/shared/services/unidade.services';
 import * as usuarioServices from '@/shared/services/usuario.services';
 import * as servicoServices from '@/shared/services/servico.services';
+import * as tipoChamadoServices from '@/shared/services/tipoChamado.services';
 import { IUsuario } from '@/shared/services/usuario.services';
 import { IServico } from '@/shared/services/servico.services';
+import { ITipoChamado } from '@/shared/services/tipoChamado.services';
 import { ehTecnico } from '@/shared/lib/permissao';
 
 export default function Chamados(){
@@ -42,7 +44,8 @@ function SearchChamados() {
   const [usuarios, setUsuarios] = useState<IUsuario[]>([]);
   const [logado, setLogado] = useState<IUsuario>();
   const [atribuirChamadoModal, setAtribuirChamadoModal] = useState(false);
-  const [tipo, setTipo] = useState(searchParams.get('tipo') ? Number(searchParams.get('tipo')) : 0);
+  const [tipo_id, setTipo_id] = useState(searchParams.get('tipo_id') || '');
+  const [tiposChamado, setTiposChamado] = useState<ITipoChamado[]>([]);
   const [ordem_id, setOrdem_id] = useState('');
   const [tecnico_id, setTecnico_id] = useState('');
   const [prioridade, setPrioridade] = useState(1);
@@ -63,14 +66,6 @@ function SearchChamados() {
     pergunta: '',
     color: 'primary'
   }
-
-  const tipos: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
-    { label: '', color: 'neutral' },
-    { label: 'Elétrica', color: 'primary' },
-    { label: 'Hidráulica', color: 'warning' },
-    { label: 'Telefonia', color: 'success' },
-    { label: 'Outros', color: 'neutral' },
-  ]
 
   const prioridades: { label: string, color: OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides> | undefined }[]  = [
     { label: '', color: 'neutral' },
@@ -110,6 +105,10 @@ function SearchChamados() {
         .then((response: IUnidade[]) => {
             setUnidades(response);
         })
+    tipoChamadoServices.listaCompleta()
+        .then((response: ITipoChamado[]) => {
+            setTiposChamado(response);
+        })
     usuarioServices.listaCompleta()
         .then((response: IUsuario[]) => {
           if (response && response.length > 0){
@@ -125,14 +124,14 @@ function SearchChamados() {
   }, [])
 
   const buscaOrdens = useCallback(async () => {
-    ordemServices.buscarTudo(status, pagina, limite, unidade_id, solicitante_id, 0, '', tipo)
+    ordemServices.buscarTudo(status, pagina, limite, unidade_id, solicitante_id, 0, '', tipo_id)
       .then((response: IPaginadoOrdem) => {
         setOrdens(response.data);
         setTotal(response.total);
         setPagina(response.pagina);
         setLimite(response.limite);
       });
-  }, [ status, pagina, limite, unidade_id, solicitante_id, tipo ]);
+  }, [ status, pagina, limite, unidade_id, solicitante_id, tipo_id ]);
 
   useEffect(() => {
     buscaOrdens();
@@ -193,7 +192,7 @@ function SearchChamados() {
     setLimite(10);
     setUnidade_id('');
     setSolicitante_id('');
-    setTipo(0);
+    setTipo_id('');
     router.push(pathname);
     buscaOrdens();
   }
@@ -308,18 +307,17 @@ function SearchChamados() {
             <FormLabel>Tipo</FormLabel>
             <Select
                 size="sm"
-                value={tipo}
+                value={tipo_id}
                 onChange={(_, newValue) => {
-                  router.push(pathname + '?' + createQueryString('tipo', String(newValue || newValue === 0 ? newValue : 1)));
-                  setTipo(newValue || newValue === 0 ? newValue : 1);
+                  router.push(pathname + '?' + createQueryString('tipo_id', newValue || ''));
+                  setTipo_id(newValue || '');
                 }}
                 placeholder="Tipo de chamado"
             >
-                <Option value={0}>Todos</Option>
-                <Option value={1}>Elétrica</Option>
-                <Option value={2}>Hidráulica</Option>
-                <Option value={3}>Telefonia</Option>
-                <Option value={4}>Outros</Option>
+                <Option value={''}>Todos</Option>
+                {tiposChamado.map((tipoChamado) => (
+                  <Option key={tipoChamado.id} value={tipoChamado.id}>{tipoChamado.nome}</Option>
+                ))}
             </Select>
         </FormControl>
         {!logado || logado?.permissao === 'USR' ? null : (<>
@@ -405,10 +403,10 @@ function SearchChamados() {
                   setUnidade_id(ordem.unidade_id);
                   router.push(pathname + '?' + createQueryString('unidade_id', ordem.unidade_id));
                 }} variant='outlined' color='neutral' title={ordem.unidade.nome}>{ordem.unidade.sigla}</Chip>}</td>
-                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}><Chip onClick={() => {
-                  setTipo(ordem.tipo);
-                  router.push(pathname + '?' + createQueryString('tipo', String(ordem.tipo)));
-                }} color={tipos[ordem.tipo].color}>{tipos[ordem.tipo].label}</Chip></td>
+                <td onClick={() => router.push('/chamados/detalhes/' + ordem.id)}>{ordem.tipoChamado && <Chip onClick={() => {
+                  setTipo_id(ordem.tipo_id);
+                  router.push(pathname + '?' + createQueryString('tipo_id', ordem.tipo_id));
+                }} color={ordem.tipoChamado.cor as OverridableStringUnion<ColorPaletteProp, ChipPropsColorOverrides>}>{ordem.tipoChamado.nome}</Chip>}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                     {['DEV', 'ADM', 'TEC'].includes(logado ? logado.permissao : '') && ordem.status === 1 ?

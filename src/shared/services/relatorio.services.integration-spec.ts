@@ -25,7 +25,7 @@ describe('relatorio.services (integração, porta do Nest para Prisma direto)', 
         data: {
           id: 'TEST-001', unidade_id: seed.unidade.id, andar: 8, sala: '801',
           solicitante_id: seed.usr.id, telefone: '11999999999', observacoes: 'Problema de teste',
-          tipo: 1, prioridade: 2, data_solicitacao: new Date(2024, 5, 1),
+          tipo_id: seed.tipoChamado.id, prioridade: 2, data_solicitacao: new Date(2024, 5, 1),
         },
       });
       await prisma.servico.create({
@@ -36,7 +36,7 @@ describe('relatorio.services (integração, porta do Nest para Prisma direto)', 
       const resposta = await relatorioServices.listarChamadosPeriodoAno(2024, 2024);
       expect(resposta).toHaveLength(1);
       expect(resposta[0]['#']).toBe(ordem.id);
-      expect(resposta[0].Tipo).toBe('Elétrica');
+      expect(resposta[0].Tipo).toBe(seed.tipoChamado.nome);
       expect(resposta[0].Prioridade).toBe('Média');
       expect(resposta[0]['Técnico Responsável']).toBe(seed.tec.nome);
     });

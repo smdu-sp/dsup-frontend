@@ -8,6 +8,7 @@ import { verificaPagina, verificaLimite } from "@/shared/lib/paginacao";
 import { IUnidade } from "./unidade.services";
 import { IUsuario } from "./usuario.services";
 import { IServico } from "./servico.services";
+import { ITipoChamado } from "./tipoChamado.services";
 
 export interface IOrdem {
     id: string;
@@ -19,7 +20,8 @@ export interface IOrdem {
     solicitante?: IUsuario;
     tratar_com?: string;
     data_solicitacao: Date;
-    tipo: number;
+    tipo_id: string;
+    tipoChamado?: ITipoChamado;
     status: number;
     prioridade: number;
     observacoes: string;
@@ -58,15 +60,15 @@ async function buscarTudo(status: number = 1, pagina: number = 1, limite: number
     solicitante_id: string = '',
     andar: number = 0,
     sala: string = '',
-    tipo: number = 0
+    tipo_id: string = ''
 ): Promise<IPaginadoOrdem> {
     const usuario = await getUsuarioAtual();
     try {
         if (!usuario) throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
         [pagina, limite] = verificaPagina(pagina, limite);
         const searchParams = {
-            // Fix: status/tipo vindo faltando/NaN não são mais tratados como
-            // filtro válido (antes gerava um 500 no Nest — bug de caracterização).
+            // Fix: status vindo faltando/NaN não é mais tratado como filtro
+            // válido (antes gerava um 500 no Nest — bug de caracterização).
             ...(Number.isFinite(status) && status !== 0 && { status }),
             ...(unidade_id !== '' && { unidade_id }),
             ...(solicitante_id !== '' && { solicitante_id }),
@@ -75,7 +77,7 @@ async function buscarTudo(status: number = 1, pagina: number = 1, limite: number
             // (a condição espalha `sala` de novo em vez de `andar`) — não é
             // um dos 3 bugs aprovados pra correção, preservado como estava.
             ...(andar !== 0 && { sala }),
-            ...(Number.isFinite(tipo) && tipo !== 0 && { tipo }),
+            ...(tipo_id !== '' && { tipo_id }),
             ...(usuario.permissao === 'USR' && {
                 // usuario.unidade_id pode ser null (usuário sem unidade); o
                 // Nest original (com strictNullChecks desligado) deixava
@@ -95,6 +97,7 @@ async function buscarTudo(status: number = 1, pagina: number = 1, limite: number
             include: {
                 unidade: true,
                 solicitante: true,
+                tipoChamado: true,
                 servicos: { orderBy: { data_inicio: 'desc' }, include: { tecnico: true } },
             },
         });
@@ -118,6 +121,7 @@ async function buscarPorId(id: string): Promise<IOrdem> {
             include: {
                 solicitante: true,
                 unidade: true,
+                tipoChamado: true,
                 servicos: {
                     include: {
                         suspensoes: true,
@@ -140,12 +144,14 @@ async function buscarPorId(id: string): Promise<IOrdem> {
     }
 }
 
-async function criar(ordemDto: { unidade_id: string, andar: number, sala: string, tipo: number, observacoes: string, telefone: string, tratar_com?: string }): Promise<IOrdem | { error: string }> {
+async function criar(ordemDto: { unidade_id: string, andar: number, sala: string, tipo_id: string, observacoes: string, telefone: string, tratar_com?: string }): Promise<IOrdem | { error: string }> {
     const solicitante = await getUsuarioAtual();
     try {
         if (!solicitante) throw new AcaoNaoAutorizada('Operação não autorizada para este usuário.');
         const unidade = await prisma.unidade.findUnique({ where: { id: ordemDto.unidade_id } });
         if (!unidade) throw new AcaoNaoAutorizada('Unidade não encontrada');
+        const tipoChamado = await prisma.tipoChamado.findUnique({ where: { id: ordemDto.tipo_id } });
+        if (!tipoChamado) throw new AcaoNaoAutorizada('Tipo de chamado não encontrado');
         const id = await geraId();
         const novaOrdem = await prisma.ordem.create({
             data: {
@@ -154,7 +160,7 @@ async function criar(ordemDto: { unidade_id: string, andar: number, sala: string
                 solicitante_id: solicitante.id,
                 andar: ordemDto.andar,
                 sala: ordemDto.sala,
-                tipo: ordemDto.tipo,
+                tipo_id: ordemDto.tipo_id,
                 observacoes: ordemDto.observacoes,
                 telefone: ordemDto.telefone,
                 tratar_com: ordemDto.tratar_com,
@@ -167,7 +173,7 @@ async function criar(ordemDto: { unidade_id: string, andar: number, sala: string
     }
 }
 
-async function atualizar(id: string, ordemDto: { prioridade: number }): Promise<IOrdem> {
+async function atualizar(id: string, ordemDto: { prioridade?: number, tipo_id?: string }): Promise<IOrdem> {
     const usuario = await getUsuarioAtual();
     try {
         // Fix: PATCH /ordens/atualizar não checava permissão nenhuma no Nest
@@ -177,7 +183,17 @@ async function atualizar(id: string, ordemDto: { prioridade: number }): Promise<
         requerPermissao(usuario, ['DEV', 'ADM', 'TEC']);
         const ordem = await prisma.ordem.findUnique({ where: { id } });
         if (!ordem) throw new AcaoNaoAutorizada('Ordem não encontrada');
-        const atualizada = await prisma.ordem.update({ where: { id }, data: { prioridade: ordemDto.prioridade } });
+        if (ordemDto.tipo_id) {
+            const tipoChamado = await prisma.tipoChamado.findUnique({ where: { id: ordemDto.tipo_id } });
+            if (!tipoChamado) throw new AcaoNaoAutorizada('Tipo de chamado não encontrado');
+        }
+        const atualizada = await prisma.ordem.update({
+            where: { id },
+            data: {
+                ...(ordemDto.prioridade !== undefined && { prioridade: ordemDto.prioridade }),
+                ...(ordemDto.tipo_id !== undefined && { tipo_id: ordemDto.tipo_id }),
+            },
+        });
         return atualizada as unknown as IOrdem;
     } catch {
         return undefined as unknown as IOrdem;

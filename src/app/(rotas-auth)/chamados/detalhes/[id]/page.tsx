@@ -9,8 +9,10 @@ import * as servicoServices from "@/shared/services/servico.services";
 import * as ordemServices from "@/shared/services/ordem.services";
 import * as unidadeServices from "@/shared/services/unidade.services";
 import * as usuarioServices from "@/shared/services/usuario.services";
+import * as tipoChamadoServices from "@/shared/services/tipoChamado.services";
 import { IOrdem } from "@/shared/services/ordem.services";
 import { IUnidade } from "@/shared/services/unidade.services";
+import { ITipoChamado } from "@/shared/services/tipoChamado.services";
 import { AlertsContext } from "@/providers/alertsProvider";
 import { IMaterial, IServico, ISuspensao } from "@/shared/services/servico.services";
 import { IUsuario } from "@/shared/services/usuario.services";
@@ -29,7 +31,8 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
     const [unidade_id, setUnidade_id] = useState('');
     const [unidades, setUnidades] = useState<IUnidade[]>([]);
     const [andar, setAndar] = useState<number>(8);
-    const [tipo, setTipo] = useState<number>(4);
+    const [tipo_id, setTipo_id] = useState<string>('');
+    const [tiposChamado, setTiposChamado] = useState<ITipoChamado[]>([]);
     const [prioridade, setPrioridade] = useState<number>(1);
     const [sala, setSala] = useState('');
     const [observacoes, setObservacoes] = useState('');
@@ -78,7 +81,7 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
                 setOrdem(ordem);
                 setUnidade_id(ordem.unidade_id);
                 setAndar(ordem.andar);
-                setTipo(ordem.tipo);
+                setTipo_id(ordem.tipo_id);
                 setTelefone(ordem.telefone);
                 setSala(ordem.sala);
                 setObservacoes(ordem.observacoes);
@@ -90,6 +93,10 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
             .then((response: IUnidade[]) => {
                 let unis = response;
                 setUnidades(unis);
+            })
+        tipoChamadoServices.listaCompleta()
+            .then((response: ITipoChamado[]) => {
+                setTiposChamado(response);
             })
         usuarioServices.validaUsuario().then((response: IUsuario) => {
             setUsuario(response);
@@ -197,7 +204,7 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
                 setAndarError('É obrigatório informar o andar');
                 erros++;
             }
-            if (!tipo){
+            if (!tipo_id){
                 setTipoError('É obrigatório informar o tipo');
                 erros++;
             }
@@ -218,7 +225,7 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
                     unidade_id,
                     andar,
                     sala,
-                    tipo,
+                    tipo_id,
                     observacoes,
                     telefone,
                     tratar_com
@@ -229,7 +236,8 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
                 });
         } else {
             ordemServices.atualizar(id, {
-                prioridade
+                prioridade,
+                tipo_id
             }).then((ordem: IOrdem) => {
                 if (!ordem) setAlert('Erro', 'Erro ao atualizar chamado!', 'danger', 3000, Cancel);
                 if (ordem) router.push('/chamados?criado=2');
@@ -726,18 +734,17 @@ export default function ChamadoDetalhes(props: { params: Promise<{ id: string }>
                                             <FormLabel>Tipo *</FormLabel>
                                             <Select
                                                 size="sm"
-                                                value={tipo}
+                                                value={tipo_id}
                                                 onChange={(_, value) => {
-                                                    setTipo(value ? value : 1)
+                                                    setTipo_id(value || '')
                                                     setTipoError('');
                                                 }}
                                                 placeholder="Tipo de chamado"
-                                                disabled={id ? true : false}
+                                                disabled={id ? (usuario?.permissao === 'USR' || (ordem?.status ?? 1) > 2) : false}
                                             >
-                                                <Option value={1}>Elétrica</Option>
-                                                <Option value={2}>Hidráulica</Option>
-                                                <Option value={3}>Telefonia</Option>
-                                                <Option value={4}>Outros</Option>
+                                                {tiposChamado.filter((tipoChamado) => tipoChamado.status || tipoChamado.id === tipo_id).map((tipoChamado) => (
+                                                    <Option key={tipoChamado.id} value={tipoChamado.id}>{tipoChamado.nome}</Option>
+                                                ))}
                                             </Select>
                                             <FormHelperText sx={{ color: 'danger.500' }}>{tipoError}</FormHelperText>
                                         </FormControl>

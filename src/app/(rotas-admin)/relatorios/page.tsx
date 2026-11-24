@@ -18,7 +18,6 @@ export default function Relatorios(){
 
 function BuscaRelatorios(){
   const tableRef = useRef<HTMLDivElement>(null);
-  const tipos = ['', 'Elétrica', 'Hidráulica', 'Telefonia', 'Outros']
 
   const [ relatorio, setRelatorio ] = useState<string>("");
   const [ ano_inicio, setAnoInicio ] = useState<number>(2024);
@@ -47,10 +46,10 @@ function BuscaRelatorios(){
             setDataRelatorio([]);
             return;
           }
-          const totalPorTipo: Record<string, number> = { 'Hidráulica': 0, 'Elétrica': 0, 'Telefonia': 0, 'Outros': 0 };
+          const totalPorTipo: Record<string, number> = {};
           response.forEach((row: relatorioServices.IChamadoPeriodoAno) => {
-            if (row.Tipo && totalPorTipo.hasOwnProperty(row.Tipo)) {
-              totalPorTipo[row.Tipo] += 1;
+            if (row.Tipo) {
+              totalPorTipo[row.Tipo] = (totalPorTipo[row.Tipo] || 0) + 1;
             }
           });
           setTotalPorTipo(totalPorTipo);
