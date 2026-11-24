@@ -7,20 +7,25 @@
 # bash ingênuos. Cada linha impressa é "CHAVE='valor-com-aspas-escapadas'",
 # que o `source` abaixo interpreta como atribuição comum.
 
-ENV_FILE="${1:-.env}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOAD_ENV_FILE="${1:-.env}"
 
-if [ ! -f "$ENV_FILE" ]; then
-  echo "ERRO: arquivo de ambiente '$ENV_FILE' não encontrado." >&2
+if [ ! -f "$LOAD_ENV_FILE" ]; then
+  echo "ERRO: arquivo de ambiente '$LOAD_ENV_FILE' não encontrado." >&2
   exit 1
 fi
 
+# Importante: este arquivo é sempre usado via `source`, então roda no mesmo
+# shell de quem chamou. Por isso NÃO reusa nomes de variável comuns como
+# SCRIPT_DIR/ENV_FILE aqui — isso já quebrou o script que chama (sobrescrevia
+# o SCRIPT_DIR do caller com o diretório deste arquivo). O caminho do
+# print-env.mjs é calculado inline, sem variável, de propósito.
 set -a
 # shellcheck disable=SC1090
-source <(node "$SCRIPT_DIR/print-env.mjs" "$ENV_FILE")
+source <(node "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/print-env.mjs" "$LOAD_ENV_FILE")
 set +a
+unset LOAD_ENV_FILE
 
 if [ -z "${DATABASE_URL:-}" ]; then
-  echo "ERRO: DATABASE_URL não definida em '$ENV_FILE'." >&2
+  echo "ERRO: DATABASE_URL não definida em '${1:-.env}'." >&2
   exit 1
 fi
